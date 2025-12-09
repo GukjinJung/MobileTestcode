@@ -1,5 +1,6 @@
 import re
 import time
+import datetime
 import requests
 import unittest
 from appium import webdriver
@@ -9,7 +10,6 @@ import os
 
 from setuptools.command.build_ext import if_dl
 
-from Android.User import backBtn
 from configuration.webDriver import AppiumConfig
 from configuration.utill import capture_screenshot
 from selenium.common import NoSuchElementException
@@ -18,6 +18,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import sys
 sys.path.append('../Android')
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 
 
 " XPath "
@@ -61,11 +64,11 @@ def authCode(self):
         clueBtn.click()
         time.sleep(7)
 
-        for _ in range(5):  # 새로고침
+        for _ in range(3):  # 새로고침
             start_x1 = 573
             start_y1 = 291
             end_x1 = 573
-            end_y1 = 720
+            end_y1 = 1320
             self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
             time.sleep(3)
 
@@ -246,11 +249,11 @@ def placeInviteEmail(self, placeId, emailAddress, role):
         clueBtn.click()
         time.sleep(7)
 
-        for _ in range(5):  # 새로고침
+        for _ in range(3):  # 새로고침
             start_x1 = 573
             start_y1 = 291
             end_x1 = 573
-            end_y1 = 559
+            end_y1 = 1320
             self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
             time.sleep(3)
 
@@ -406,11 +409,11 @@ def placeInvitePhone(self, placeId,countryCode, phoneNumber, role):
         clueBtn.click()
         time.sleep(7)
 
-        for _ in range(5):  # 새로고침
+        for _ in range(3):  # 새로고침
             start_x1 = 573
             start_y1 = 291
             end_x1 = 573
-            end_y1 = 559
+            end_y1 = 1320
             self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
             time.sleep(3)
 
@@ -540,7 +543,7 @@ def placeInvitePhone(self, placeId,countryCode, phoneNumber, role):
     clue_button.click()
     time.sleep(0.5)
 
-def signUpEmail(self, emailAddress):
+def signUpEmail(self, emailAddress): #랜덤 이메일 회원가입
     signUp = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원가입")
     signUp.click()
 
@@ -589,7 +592,7 @@ def signUpEmail(self, emailAddress):
     startBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작하기")
     startBtn.click()
 
-def signUpMobile(self, mobileNumber):
+def signUpMobile(self, mobileNumber): #랜덤 폰번호 회원가입
     signUp = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원가입")
     signUp.click()
 
@@ -1595,6 +1598,7 @@ def resetRePasswordValidtion(self):
 
     print("--------------- 비밀번호 sssSuprema-100! 완료")
 
+
 def leaveAdmin(self):
 
     print("------------- 테스트 시나리오 종료, 회원탈퇴 시도")
@@ -1625,6 +1629,11 @@ def leaveAdmin(self):
     actions.w3c_actions.pointer_action.release()
     actions.perform()
 
+    assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원탈퇴").is_displayed()
+    deleteAccountMsg = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.']")
+    contentDesc = deleteAccountMsg.get_attribute('content-desc')
+    print(f"추출한 content-desc 값 : {contentDesc}")
+    self.assertEqual(contentDesc, "회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.")
     confirmBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, confirm)
     confirmBtn.click()
 
@@ -1696,7 +1705,7 @@ def toggle_click(self, menuXpath):
 
 
 
-def toggle_status(self, menuXpath1, menuXpath2, menuXpath3, menuXpath4):
+def toggle_status(self, menuXpath1, menuXpath2, menuXpath3, menuXpath4, location):
     def get_status(xpath):
         try:
             el = self.driver.find_element(AppiumBy.XPATH, xpath)
@@ -1715,8 +1724,9 @@ def toggle_status(self, menuXpath1, menuXpath2, menuXpath3, menuXpath4):
     backBtn = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.ImageView")
     backBtn.click()
 
-    acMenu = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "출입 통제")
-    acMenu.click()
+    alramMenu = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, location)
+    alramMenu.click()
+
 
     reStatus1 = get_status(menuXpath1) if menuXpath1 else None
     reStatus2 = get_status(menuXpath2) if menuXpath2 else None
@@ -1727,4 +1737,126 @@ def toggle_status(self, menuXpath1, menuXpath2, menuXpath3, menuXpath4):
     if status2 is not None: assert status2 == reStatus2
     if status3 is not None: assert status3 == reStatus3
     if status4 is not None: assert status4 == reStatus4
+
+def signUp_mobile(self, phoneNum, name, password, rePassword):
+
+    signUpBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원가입")
+    signUpBtn.click()
+
+    agreeAll = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "약관 전체 동의")
+    agreeAll.click()
+
+    nextBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "다음")
+    is_enabled = nextBtn.get_attribute("enabled")
+    self.assertEqual(is_enabled, "true", "인증완료 버튼 활성화")
+    nextBtn.click()
+
+    #모바일 회원 가입
+    mobileBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "모바일")
+    mobileBtn.click()
+
+    mobileInput = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
+    mobileInput.click()
+    mobileInput.send_keys(phoneNum)
+
+    AuthReqestBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "인증요청")
+    is_enabled = AuthReqestBtn.get_attribute("enabled")
+    self.assertEqual(is_enabled, "true", "인증요청 버튼 활성화")
+    AuthReqestBtn.click()
+    time.sleep(1)
+
+    authCode_mobile(self)
+    time.sleep(0.5)
+
+    atBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "인증완료")
+    is_enabled = atBtn.get_attribute("enabled")
+    self.assertEqual(is_enabled, "true", "인증완료 버튼 활성화")
+    atBtn.click()
+
+    nameInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.widget.EditText[1]")
+    nameInput.click()
+    nameInput.send_keys(name)
+
+    passwordInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.widget.EditText[2]")
+    passwordInput.click()
+    passwordInput.send_keys(password)
+
+    rePasswordInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.widget.EditText[3]")
+    rePasswordInput.click()
+    rePasswordInput.send_keys(rePassword)
+
+    self.driver.back()
+    start_x1 = 519
+    start_y1 = 1351
+    end_x1 = 519
+    end_y1 = 1305
+    self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+
+    signUpCompleteBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작하기")
+    is_enabled = signUpCompleteBtn.get_attribute("enabled")
+    self.assertEqual(is_enabled, "true", "시작하기 버튼 활성화")
+    signUpCompleteBtn.click()
+    time.sleep(2)
+
+
+def get_current_hour(self):
+    return datetime.datetime.now().strftime('%H')
+
+def get_current_min(self):
+    return datetime.datetime.now().strftime('%M')
+
+def backBtn(self):
+    #뒤로가기 후 사용자 상세 재 진입
+    self.driver.tap([(68, 174)])
+    time.sleep(1)
+
+def user_invite_phone(self, name, phone_num):
+
+    inviteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc='초대하기']")
+    inviteBtn.click()
+
+    # 인증 수단 - 휴대폰 번호(QR)로 사용자 초대
+    user_qr = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호")
+    user_qr.click()
+
+    add_user = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "추가")
+    add_user.click()
+
+    name_input = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='초대 받는 사람']/android.view.View[2]/android.widget.EditText[1]")
+    name_input.click()
+    name_input.send_keys(name)
+
+    phone_input = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='초대 받는 사람']/android.view.View[2]/android.widget.EditText[2]")
+    phone_input.click()
+    phone_input.send_keys(phone_num)
+
+    next_Btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "다음")
+    next_Btn.click()
+
+    invite_Btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "초대")
+    invite_Btn.click()
+    time.sleep(1)
+
+    confirm_btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인")
+    confirm_btn.click()
+    time.sleep(1)
+
+def user_delete(self):
+
+    user_modity = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "수정")
+    user_modity.click()
+
+    user_delete = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='삭제'])[2]")
+    user_delete.click()
+
+    assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "사용자 제외")
+    delete_pop = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='해당 사용자를 이 공간에서 제외하시겠습니까?']")
+    contentDesc = delete_pop.get_attribute('content-desc')
+    print(f"추출한 content-desc 값 : {contentDesc}")
+    self.assertEqual(contentDesc, "해당 사용자를 이 공간에서 제외하시겠습니까?")
+
+    confirm_Btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, confirm)
+    confirm_Btn.click()
+    time.sleep(1)
+
 

@@ -258,9 +258,7 @@ class IntroScreen(unittest.TestCase):
             self.fail()
 
     def test_DQS_T999999_1(self):
-        """
-        DQS_T99999 이메일로 로그인/로그아웃 기능 동작 확인
-        """
+
         try:
             print("DQS_T99999 이메일로 로그인/로그아웃 기능 동작 확인")
 
@@ -685,9 +683,9 @@ class IntroScreen(unittest.TestCase):
             print(str(e))
             self.fail()
 
-    def test_DQS_T13669_1(self):
+    def test_DQS_T13668_T13669(self):
         try:
-            print("DQS_T13669_1 회원탈퇴(모바일) 기능 동작 확인")
+            print("DQS-T13668 모바일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(모바일) 기능 동작 확인")
 
             phone_Num = "010" + str(random.randint(0, 99999999)).zfill(8)
             print(phone_Num)
@@ -697,54 +695,9 @@ class IntroScreen(unittest.TestCase):
 
             utils.signUpMobile(self, phone_Num)
 
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, mobileLogin)
-            login_button.click()
+            utils.mobile_login(self, phone_Num, "Kjstar36!!")
 
-            phone_input_box = self.driver.find_element(AppiumBy.XPATH, phoneNumberInputBox)
-            phone_input_box.click()
-            phone_input_box.send_keys(phone_Num)
-
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, passwordInputBox)
-            password_input_box.click()
-            password_input_box.send_keys("Kjstar36!!")
-
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, login)
-            login_button.click()
-            time.sleep(2)
-
-            leadbutton = self.driver.find_element(AppiumBy.XPATH, lead)
-            leadbutton.click()
-
-            csctBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "고객센터")
-            csctBtn.click()
-
-            leavMB = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc='안녕하세요.\n슈프리마 CLUe 서비스 고객센터 입니다.\n무엇을 도와드릴까요?\n운영시간 09:00 ~ 17:00\n(주말, 공휴일 제외)']/android.view.View[2]/android.widget.ImageView[3]")
-            leavMB.click()
-
-            assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='회원탈퇴'])[1]").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원탈퇴하시기 전에 꼭 읽어 보세요.\n모든 개인 정보는 지정된 보유 기간 후 자동 삭제됩니다.\n계정이 삭제된 후에는 계정을 살리거나 데이터를 복구 할 수 없습니다.\n공간의 유일한 메인 관리자인 경우 다른 사람에게 이관 후 회원탈퇴가 가능합니다.").is_displayed()
-
-            start_x = 135
-            start_y = 2010
-
-            end_x = 982
-            end_y = 2010
-
-            actions = ActionChains(self.driver)
-            actions.w3c_actions.pointer_action.move_to_location(start_x, start_y)
-            actions.w3c_actions.pointer_action.pointer_down()
-            actions.w3c_actions.pointer_action.pause(0.1)  # 100ms 대기
-            actions.w3c_actions.pointer_action.move_to_location(end_x, end_y)
-            actions.w3c_actions.pointer_action.release()
-            actions.perform()
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원탈퇴").is_displayed()
-            deleteAccountMsg = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.']")
-            contentDesc = deleteAccountMsg.get_attribute('content-desc')
-            print(f"추출한 content-desc 값 : {contentDesc}")
-            self.assertEqual(contentDesc, "회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.")
-            confirmBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, confirm)
-            confirmBtn.click()
+            utils.leaveAdmin(self)
 
             self.driver.quit()
 
@@ -764,20 +717,7 @@ class IntroScreen(unittest.TestCase):
 
             time.sleep(1)
 
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, mobileLogin)
-            login_button.click()
-
-            phone_input_box = self.driver.find_element(AppiumBy.XPATH, phoneNumberInputBox)
-            phone_input_box.click()
-            phone_input_box.send_keys(phone_Num)
-
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, passwordInputBox)
-            password_input_box.click()
-            password_input_box.send_keys("Kjstar36!!")
-
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, login)
-            login_button.click()
-            time.sleep(2)
+            utils.mobile_login(self, phone_Num, "Kjstar36!!")
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "로그인 정보 오류").is_displayed()
             loginErrorMsg = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='계정 혹은 비밀번호를\n다시 확인해 주세요.\na1000']")
@@ -789,17 +729,17 @@ class IntroScreen(unittest.TestCase):
 
             pass
 
-            print("DQS_T13669 회원탈퇴(모바일) 기능 동작 확인 | Pass")
+            print("DQS-T13668 모바일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(모바일) 기능 동작 확인 | Pass")
 
         except Exception as e:
             capture_screenshot(self.driver, self._testMethodName)
-            print("DQS_T13669 회원탈퇴(모바일) 기능 동작 확인 | Failed")
+            print("DQS-T13668 모바일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(모바일) 기능 동작 확인 | Failed")
             print(str(e))
             self.fail()
 
-    def test_DQS_T13669_2(self):
+    def test_DQS_T999999_30_T13669(self):
         try:
-            print("DQS_T13669_2 회원탈퇴(이메일) 기능 동작 확인")
+            print("DQS_999999_30 이메일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(이메일) 기능 동작 확인")
 
             email_random = "kjjung+pp"+ str(random.randint(11, 9999)).zfill(3) + "@suprema.co.kr"
             print(email_random)
@@ -810,62 +750,10 @@ class IntroScreen(unittest.TestCase):
             utils.signUpEmail(self, email_random)
             time.sleep(3)
 
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, emailLogin)
-            login_button.click()
-
-            email_input_box = self.driver.find_element(AppiumBy.XPATH, emailInputBox)
-            email_input_box.click()
-            email_input_box.send_keys(email_random)
-
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, emailPasswordInputBox)
-            password_input_box.click()
-            password_input_box.send_keys("Kjstar36!!")
-
-            login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, login)
-            login_button.click()
+            utils.email_login(self, email_random, "Kjstar36!!")
             time.sleep(2)
 
-            utils.authCode(self)
-
-            self.driver.hide_keyboard()
-
-            authBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, authComplete)
-            authBtn.click()
-
-            leadbutton = self.driver.find_element(AppiumBy.XPATH, lead)
-            leadbutton.click()
-
-            csctBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "고객센터")
-            csctBtn.click()
-            time.sleep(0.3)
-
-            leavMB = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc='안녕하세요.\n슈프리마 CLUe 서비스 고객센터 입니다.\n무엇을 도와드릴까요?\n운영시간 09:00 ~ 17:00\n(주말, 공휴일 제외)']/android.view.View[2]/android.widget.ImageView[3]")
-            leavMB.click()
-
-            assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='회원탈퇴'])[1]").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원탈퇴하시기 전에 꼭 읽어 보세요.\n모든 개인 정보는 지정된 보유 기간 후 자동 삭제됩니다.\n계정이 삭제된 후에는 계정을 살리거나 데이터를 복구 할 수 없습니다.\n공간의 유일한 메인 관리자인 경우 다른 사람에게 이관 후 회원탈퇴가 가능합니다.").is_displayed()
-
-            start_x = 135
-            start_y = 2010
-
-            end_x = 982
-            end_y = 2010
-
-            actions = ActionChains(self.driver)
-            actions.w3c_actions.pointer_action.move_to_location(start_x, start_y)
-            actions.w3c_actions.pointer_action.pointer_down()
-            actions.w3c_actions.pointer_action.pause(0.1)  # 100ms 대기
-            actions.w3c_actions.pointer_action.move_to_location(end_x, end_y)
-            actions.w3c_actions.pointer_action.release()
-            actions.perform()
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원탈퇴").is_displayed()
-            deleteAccountMsg = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.']")
-            contentDesc = deleteAccountMsg.get_attribute('content-desc')
-            print(f"추출한 content-desc 값 : {contentDesc}")
-            self.assertEqual(contentDesc, "회원탈퇴 성공하였습니다.\n로그인 페이지로 이동합니다.")
-            confirmBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, confirm)
-            confirmBtn.click()
+            utils.leaveAdmin(self)
 
             self.driver.quit()
 
@@ -894,7 +782,7 @@ class IntroScreen(unittest.TestCase):
 
             password_input_box = self.driver.find_element(AppiumBy.XPATH, emailPasswordInputBox)
             password_input_box.click()
-            password_input_box.send_keys("Kjstar36!!")
+            password_input_box.send_keys("kJstar36!!")
 
             login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, login)
             login_button.click()
@@ -910,11 +798,11 @@ class IntroScreen(unittest.TestCase):
 
             pass
 
-            print("DQS_T13669_2 회원탈퇴(이메일) 기능 동작 확인 | Pass")
+            print("DQS_999999_30 이메일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(이메일) 기능 동작 확인 | Pass")
 
         except Exception as e:
             capture_screenshot(self.driver, self._testMethodName)
-            print("DQS_T13669_2 회원탈퇴(이메일) 기능 동작 확인 | Failed")
+            print("DQS_999999_30 이메일로 회원가입 기능 동작 확인 || DQS_T13669 회원탈퇴(이메일) 기능 동작 확인 | Failed")
             print(str(e))
             self.fail()
 
@@ -2136,7 +2024,7 @@ class IntroScreen(unittest.TestCase):
 
     def test_DQS_T999999_16(self):
         try:
-            print("DQS-T14140 이메일로 회원가입 휴대폰 번호 입력 페이지에서 당일 탈퇴한 계정 입력 시 동작 확인")
+            print("DQS-T999999_16 이메일로 회원가입 휴대폰 번호 입력 페이지에서 당일 탈퇴한 계정 입력 시 동작 확인")
 
             SignUp = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "회원가입")
             SignUp.click()
@@ -2209,7 +2097,7 @@ class IntroScreen(unittest.TestCase):
 
     def test_DQS_T999999_17(self):
         try:
-            print("DQS-T14141 로그인 페이지에서 가입되지 않은 이메일 주소로 로그인 시도 시 로그인 실패 동작 확인")
+            print("DQS-T999999_17 로그인 페이지에서 가입되지 않은 이메일 주소로 로그인 시도 시 로그인 실패 동작 확인")
 
             email_random = "kjjung+pp" + str(random.randint(1000, 9999)).zfill(3) + "@suprema.co.kr"
             print(email_random)
@@ -4593,7 +4481,7 @@ class IntroScreen(unittest.TestCase):
 
     def test_DQS_T999999_8(self):
         try:
-            print("DQS-T999999 비밀번호 찾기 기능 중 가입되지 않은 이메일 주소 입력 시 동작 확인")
+            print("DQS-T999999_8 비밀번호 찾기 기능 중 가입되지 않은 이메일 주소 입력 시 동작 확인")
 
             login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, emailLogin)
             login_button.click()
@@ -4631,7 +4519,7 @@ class IntroScreen(unittest.TestCase):
 
     def test_DQS_T999999_9(self):
         try:
-            print("DQS_T999999 공간 초대/미초대 된 브랜치 관리자로 이메일 로그인 동작 확인")
+            print("DQS_T999999_9 공간 초대/미초대 된 브랜치 관리자로 이메일 로그인 동작 확인")
 
             login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, emailLogin)
             login_button.click()
