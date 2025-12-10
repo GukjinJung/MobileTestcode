@@ -1859,4 +1859,59 @@ def user_delete(self):
     confirm_Btn.click()
     time.sleep(1)
 
+def swipe_and_select_time(self, target_value, start_x, start_y, end_x, end_y, max_swipes=10, duration=100, xpath_selector=None):
+    """
+    스와이프하면서 특정 시간 값을 찾아서 선택하는 헬퍼 함수
+    
+    Args:
+        target_value: 찾을 시간 값 (예: "08", "17")
+        start_x, start_y, end_x, end_y: 스와이프 좌표
+        max_swipes: 최대 스와이프 횟수 (기본값: 10)
+        duration: 스와이프 지속 시간 (기본값: 100ms, 최적화됨)
+        xpath_selector: XPath 선택자 (None이면 ACCESSIBILITY_ID 사용)
+    """
+    for _ in range(max_swipes):
+        try:
+            if xpath_selector:
+                element = self.driver.find_element(AppiumBy.XPATH, xpath_selector)
+            else:
+                element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, target_value)
+            
+            if element.is_displayed():
+                element.click()
+                return True
+        except NoSuchElementException:
+            self.driver.swipe(start_x, start_y, end_x, end_y, duration)
+    
+    raise NoSuchElementException(f"'{target_value}' 값을 찾을 수 없습니다.")
+
+def quick_swipe_down(self, start_x=779, start_y=1920, end_x=779, end_y=390, duration=100):
+    """빠른 아래 방향 스크롤"""
+    self.driver.swipe(start_x, start_y, end_x, end_y, duration)
+
+def wait_and_click(self, locator_type, locator_value, timeout=3):
+    """
+    명시적 대기를 사용하여 요소를 찾고 클릭
+    time.sleep() 대신 WebDriverWait 사용
+    """
+    try:
+        if locator_type == "ACCESSIBILITY_ID":
+            element = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, locator_value))
+            )
+        elif locator_type == "XPATH":
+            element = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located((AppiumBy.XPATH, locator_value))
+            )
+        element.click()
+        return element
+    except:
+        # fallback to immediate find
+        if locator_type == "ACCESSIBILITY_ID":
+            element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, locator_value)
+        else:
+            element = self.driver.find_element(AppiumBy.XPATH, locator_value)
+        element.click()
+        return element
+
 
