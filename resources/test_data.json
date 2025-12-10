@@ -1,0 +1,10 @@
+{
+  "valid_user": {
+    "username": "test.user@supremainc.com",
+    "password": "TestPassword123!"
+  },
+  "invalid_user": {
+    "username": "invalid@supremainc.com",
+    "password": "WrongPassword"
+  }
+}
