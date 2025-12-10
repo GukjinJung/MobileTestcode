@@ -338,13 +338,13 @@ class UserMenu(unittest.TestCase):
 
             self.driver.tap([(967, 2084)])
             #사용자 초대 버튼 클릭
-            time.sleep(1)
+            time.sleep(0.3)  # 최소화
 
             #utils.user_invite_phone(self, "e2e_Test1", "01012345678")
 
             userSelete = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "e2e_Test1\n출입기간")
             userSelete.click()
-            time.sleep(1)
+            time.sleep(0.3)  # 최소화
 
             #스케줄 추가
             daySchedule = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "요일별\n제한없음")
@@ -363,145 +363,55 @@ class UserMenu(unittest.TestCase):
 
             monSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[15]")
             monSchedule.click()
-            time.sleep(1)
+            time.sleep(0.2)  # 최소화
 
+            # 월요일 시작 시간: 08시 (헬퍼 함수 사용)
             mon_start_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
             mon_start_hour.click()
+            utils.swipe_and_select_time(self, "08", 260, 1960, 260, 1460, duration=80)
 
-            max_swipes = 10
-            start_x = 260
-            start_y = 1960
-            end_x = 260
-            end_y = 1460
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "08")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x, start_y, end_x, end_y, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 월요일 종료 시간: 17시 (헬퍼 함수 사용)
             mon_end_hour = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
             mon_end_hour.click()
-
-            max_swipes = 10
-            start_x1 = 255
-            start_y1 = 2060
-            end_x1 = 255
-            end_y1 = 1460
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "17")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x1, start_y1, end_x1, end_y1, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "17", 255, 2060, 255, 1460, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]") # -버튼 출력 확인
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[21]") # +버튼 출력 확인
 
-            # 아래방향으로 스크롤 이동
-            start_x2 = 779
-            start_y2 = 1920
-            end_x2 = 779
-            end_y2 = 390
-            self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
-            time.sleep(1)
+            # 아래방향 스크롤 (최적화)
+            utils.quick_swipe_down(self)
+            time.sleep(0.2)
 
             # 수요일 + 버튼 선택
             wedSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[2]")
             wedSchedule.click()
-            time.sleep(1)
+            time.sleep(0.2)
 
+            # 수요일 종료 시간: 18시
             wed_end_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[2]")
             wed_end_hour.click()
-
-            max_swipes = 10
-            start_x3 = 260
-            start_y3 = 1320
-            end_x3 = 260
-            end_y3 = 720
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "18")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "18", 260, 1320, 260, 720, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[5]") # -버튼 출력 확인
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[8]") # +버튼 출력 확인
 
-            wedSchedule_add1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[8]") # +버튼 선택
+            # 수요일 추가 시간대 1
+            wedSchedule_add1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[8]")
             wedSchedule_add1.click()
-            time.sleep(0.5)
+            time.sleep(0.2)
 
-            # 아래방향으로 스크롤 이동
-            start_x2 = 779
-            start_y2 = 1920
-            end_x2 = 779
-            end_y2 = 390
-            self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
-            time.sleep(1)
+            utils.quick_swipe_down(self)
+            time.sleep(0.2)
 
+            # 수요일 시작 시간 2: 18시
             wed_start_hour2 = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
             wed_start_hour2.click()
+            utils.swipe_and_select_time(self, "18", 250, 1070, 250, 500, duration=80)
 
-            max_swipes = 10
-            start_x4 = 250
-            start_y4 = 1070
-            end_x4 = 250
-            end_y4 = 500
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "18")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x4, start_y4, end_x4, end_y4, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            time.sleep(1)
-
+            # 수요일 종료 시간 2: 21시
             wed_end_hour2 = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
             wed_end_hour2.click()
-
-            max_swipes = 10
-            start_x5 = 260
-            start_y5 = 1180
-            end_x5 = 260
-            end_y5 = 620
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "21")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x5, start_y5, end_x5, end_y5, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "21", 260, 1180, 260, 620, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[3]") # -버튼 출력 확인
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[6]") # +버튼 출력 확인
@@ -509,211 +419,75 @@ class UserMenu(unittest.TestCase):
             # 토요일 + 버튼 선택
             satSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[12]")
             satSchedule.click()
-            time.sleep(1)
+            time.sleep(0.2)
 
+            # 토요일 시작 시간: 10시
             sat_start_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
             sat_start_hour.click()
+            utils.swipe_and_select_time(self, "10", 246, 2130, 246, 1630, duration=80)
 
-            max_swipes = 10
-            start_x6 = 246
-            start_y6 = 2130
-            end_x6 = 246
-            end_y6 = 1630
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "10")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x6, start_y6, end_x6, end_y6, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 토요일 종료 시간: 15시
             sat_end_hour = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='09']")
             sat_end_hour.click()
-
-            max_swipes = 10
-            start_x7 = 250
-            start_y7 = 1430
-            end_x7 = 250
-            end_y7 = 830
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "15")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x7, start_y7, end_x7, end_y7, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "15", 250, 1430, 250, 830, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[15]") # -버튼 출력 확인
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]") # +버튼 출력 확인
 
+            # 토요일 추가 시간대 2
             satSchedule2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]")
             satSchedule2.click()
-            time.sleep(1)
+            time.sleep(0.2)
 
-            # 아래방향으로 스크롤 이동
-            start_x2 = 779
-            start_y2 = 1920
-            end_x2 = 779
-            end_y2 = 390
-            self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
-            time.sleep(1)
+            utils.quick_swipe_down(self)
+            time.sleep(0.2)
 
+            # 토요일 시작 시간 2: 15시
             sat_start_hour2 = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
             sat_start_hour2.click()
+            utils.swipe_and_select_time(self, "15", 250, 2050, 250, 1480, duration=80, xpath_selector="(//android.view.View[@content-desc='15'])[2]")
 
-            max_swipes = 10
-            start_x9 = 250
-            start_y9 = 2050
-            end_x9 = 250
-            end_y9 = 1480
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='15'])[2]")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x9, start_y9, end_x9, end_y9, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 토요일 종료 시간 2: 18시
             sat_end_hour2 = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
             sat_end_hour2.click()
+            utils.swipe_and_select_time(self, "18", 250, 2150, 255, 1590, duration=80)
 
-            max_swipes = 10
-            start_x10 = 250
-            start_y10 = 2150
-            end_x10 = 255
-            end_y10 = 1590
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "18")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x10, start_y10, end_x10, end_y10, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 토요일 종료 분 2: 30분
             sat_end_min2 = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='00'])[4]")
             sat_end_min2.click()
-
-            max_swipe = 40
-            start_x11 = 700
-            start_y11 = 2140
-            end_x11 = 700
-            end_y11 = 1590
-            duration = 200
-
-            for _ in range(max_swipe):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "30")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x11, start_y11, end_x11, end_y11, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "30", 700, 2140, 700, 1590, max_swipes=15, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[15]") # -버튼 출력 확인
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]") # +버튼 출력 확인
 
+            # 토요일 추가 시간대 3
             satSchedule3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]")
             satSchedule3.click()
-            time.sleep(1)
+            time.sleep(0.2)
 
-            # 아래방향으로 스크롤 이동
-            start_x2 = 779
-            start_y2 = 1920
-            end_x2 = 779
-            end_y2 = 390
-            self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
-            time.sleep(1)
+            utils.quick_swipe_down(self)
+            time.sleep(0.2)
 
+            # 토요일 시작 시간 3: 19시
             sat_start_hour3 = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
             sat_start_hour3.click()
+            utils.swipe_and_select_time(self, "19", 250, 2020, 250, 1540, duration=80)
 
-            max_swipes = 10
-            start_x13 = 250
-            start_y13 = 2020
-            end_x13 = 250
-            end_y13 = 1540
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "19")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x13, start_y13, end_x13, end_y13, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 토요일 종료 시간 3: 22시
             sat_end_hour3 = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
             sat_end_hour3.click()
+            utils.swipe_and_select_time(self, "22", 250, 2140, 250, 1560, duration=80)
 
-            max_swipes = 10
-            start_x14 = 250
-            start_y14 = 2140
-            end_x14 = 250
-            end_y14 = 1560
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "22")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x14, start_y14, end_x14, end_y14, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
+            # 토요일 종료 분 3: 50분
             sat_end_min3 = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='00'])[5]")
             sat_end_min3.click()
-
-            max_swipe = 40
-            start_x15 = 700
-            start_y15 = 2130
-            end_x15 = 700
-            end_y15 = 1570
-            duration = 200
-
-            for _ in range(max_swipe):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "50")
-                    if element.is_displayed():
-                        element.click()
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x15, start_y15, end_x15, end_y15, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            utils.swipe_and_select_time(self, "50", 700, 2130, 700, 1570, max_swipes=20, duration=80)
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[19]") # -버튼 출력 확인
 
             save_btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "저장")
             save_btn.click()
-            time.sleep(1)
+            time.sleep(0.3)
 
             #테스트한 스케줄 삭제
             delete_Schedule1 = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='Test_Schedule1']/android.widget.ImageView[2]")
