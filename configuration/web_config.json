@@ -1,0 +1,14 @@
+{
+    "base_url": "http://localhost:8080",
+    "browser": "chromium",
+    "headless": false,
+    "slow_mo": 100,
+    "viewport": {
+        "width": 1920,
+        "height": 1080
+    },
+    "timeout": 30000,
+    "screenshot_on_failure": true,
+    "video_recording": true,
+    "trace_recording": true
+}
