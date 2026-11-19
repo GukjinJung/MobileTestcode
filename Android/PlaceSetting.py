@@ -81,21 +81,11 @@ class AlramMenu(unittest.TestCase):
         try:
             print("DQS_T15895 [영상보안] 공간 설정에 알람 설정 UI 확인")
 
-            place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-            place.click()
-            time.sleep(3)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("비디오 공간")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간\nID : 22").is_displayed()
-
-            self.driver.tap([(260, 644)])
+            # 로그인 직후 공간은 고정이 아님 (마지막 사용 공간) → 비디오 공간으로 이동
+            utils.move_place(self, "비디오 공간")
             time.sleep(2)
 
-            spaceSetting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정")
+            spaceSetting = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비디오 공간']/android.widget.ImageView[3]")
             spaceSetting.click()
             time.sleep(1)
 
@@ -311,21 +301,11 @@ class AlramMenu(unittest.TestCase):
         try:
             print("DQS_T15898 영상 감시에 영상 이벤트 알람 설정 동작 확인")
 
-            place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-            place.click()
-            time.sleep(5)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("비디오 공간")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간\nID : 22").is_displayed()
-
-            self.driver.tap([(260, 644)])
+            # 로그인 직후 공간은 고정이 아님 (마지막 사용 공간) → 비디오 공간으로 이동
+            utils.move_place(self, "비디오 공간")
             time.sleep(2)
 
-            spaceSetting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정")
+            spaceSetting = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비디오 공간']/android.widget.ImageView[3]")
             spaceSetting.click()
             time.sleep(1)
 
@@ -391,21 +371,11 @@ class AlramMenu(unittest.TestCase):
         try:
             print("DQS_T15899 영상 감시에 영상 이벤트 순서 오류 알람 설정 동작 확인")
 
-            place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-            place.click()
-            time.sleep(5)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("비디오 공간")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간\nID : 22").is_displayed()
-
-            self.driver.tap([(260, 644)])
+            # 로그인 직후 공간은 고정이 아님 (마지막 사용 공간) → 비디오 공간으로 이동
+            utils.move_place(self, "비디오 공간")
             time.sleep(2)
 
-            spaceSetting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정")
+            spaceSetting = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비디오 공간']/android.widget.ImageView[3]")
             spaceSetting.click()
             time.sleep(1)
 
@@ -471,21 +441,11 @@ class AlramMenu(unittest.TestCase):
         try:
             print("DQS_T15900 영상 감시에 IoT 이벤트 순서 오류 알람 설정 동작 확인")
 
-            place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-            place.click()
-            time.sleep(5)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("비디오 공간")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간\nID : 22").is_displayed()
-
-            self.driver.tap([(260, 644)])
+            # 로그인 직후 공간은 고정이 아님 (마지막 사용 공간) → 비디오 공간으로 이동
+            utils.move_place(self, "비디오 공간")
             time.sleep(2)
 
-            spaceSetting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정")
+            spaceSetting = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비디오 공간']/android.widget.ImageView[3]")
             spaceSetting.click()
             time.sleep(1)
 
@@ -538,22 +498,8 @@ class adminMenu_Mobile(unittest.TestCase):
         self.driver.implicitly_wait(10)
 
         utils.mobile_login(self, "01020905304", "Kjstar36!!")
+        utils.move_place(self, "Visitor Place1")  # 로그인 직후 공간은 고정이 아님 (마지막 사용 공간) → Visitor Place1으로 이동
         time.sleep(2)
-
-        place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-        if place.get_attribute("content-desc") != "Visitor Place1":
-            # "Visitor Place1"이 아닐 경우 다시 찾기
-            self.driver.tap([(125, 277)])
-            time.sleep(2)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("Visitor Place1")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1\nID : 240").is_displayed()
-            self.driver.tap([(260, 644)])
-            time.sleep(2)
 
     def tearDown(self):
         self.driver.quit()
@@ -1726,22 +1672,9 @@ class adminMenu_Email(unittest.TestCase):
         self.driver.implicitly_wait(10)
 
         utils.email_login(self, "kjjung+p1@suprema.co.kr", "Kjstar36!!")
-        time.sleep(3)
+        utils.move_place(self, "Visitor Place1")  # 이메일 계정은 ID가 가장 높은 Brivo_Global로 진입 → Visitor Place1으로 이동
+        time.sleep(2)
 
-        place = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1")
-        if place.get_attribute("content-desc") != "Visitor Place1":
-            # "Visitor Place1"이 아닐 경우 다시 찾기
-            self.driver.tap([(125, 277)])
-            time.sleep(2)
-
-            placeInput = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
-            placeInput.click()
-            placeInput.send_keys("Visitor Place1")
-            time.sleep(1)
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1\nID : 240").is_displayed()
-            self.driver.tap([(260, 644)])
-            time.sleep(2)
 
     def tearDown(self):
         self.driver.quit()
@@ -2410,7 +2343,8 @@ class adminMenu_Email(unittest.TestCase):
             confirm.click()
 
             utils.email_login(self, "kjjung+p2@suprema.co.kr", "Kjstar36!!") #해당 계정 2개의 공간 존재
-            time.sleep(1)
+            utils.move_place(self, "메인관리자 1명_서브관리자 1명 공간")  # 이메일 계정은 ID가 가장 높은 Visitor Place1로 진입 → 초대된 메인관리자 1명_서브관리자 1명 공간으로 이동
+            time.sleep(2)
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "메인관리자 1명_서브관리자 1명 공간").is_displayed()
 
@@ -2467,7 +2401,8 @@ class adminMenu_Email(unittest.TestCase):
             confirm.click()
 
             utils.email_login(self, "kjjung+p3@suprema.co.kr", "Kjstar36!!") #해당 계정 1개의 공간 존재
-            time.sleep(1)
+            utils.move_place(self, "메인관리자 1명_서브관리자 1명 공간")  # 초대된 공간 1개뿐이라 보통 바로 진입 (이미 해당 공간이면 이동하지 않음)
+            time.sleep(2)
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "메인관리자 1명_서브관리자 1명 공간").is_displayed()
 

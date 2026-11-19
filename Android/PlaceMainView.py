@@ -7,10 +7,6 @@ from appium.webdriver.common.appiumby import AppiumBy
 #from appium.options.android import UiAutomator2Options
 from appium.webdriver.common.touch_action import TouchAction
 from selenium.common import NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-
-from Android.PlaceMainView_Email import leadBtn
-from Android.User import confirm
 from configuration.utill import capture_screenshot
 from configuration.webDriver import AppiumConfig
 import sys
@@ -108,161 +104,17 @@ class SideMenu(unittest.TestCase):
             if not is_on:
                 toggle_btn.click()  # OFF면 클릭해서 ON으로 변경
 
-            self.driver.tap([(840, 574)])
+            # 시작 11:50 / 종료 22:55 설정
+            utils.set_dnd_time(self, 11, 50, 22, 55)
 
-            max_swipes = 24
-            start_x = 215
-            start_y = 1707
-            end_x = 215
-            end_y = 1707+60
-            duration = 200
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작 시간\n 오전 11 : 50").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "종료 시간\n 오후 10 : 55").is_displayed()
 
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "11 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x, start_y, end_x, end_y, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            # default 시간 복구(12:00 ~ 23:00) 및 방해금지 Off
+            utils.set_dnd_time(self, 12, 0, 23, 0)
 
-            max_swipes = 60
-            start_x1 = 331
-            start_y1 = 1707
-            end_x1 = 797
-            end_y1 = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "50 minutes")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x1, start_y1, end_x1, end_y1, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 24
-            start_x3 = 738
-            start_y3 = 1707
-            end_x3 = 738
-            end_y3 = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "22 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 60
-            start_x3 = 873
-            start_y3 = 1707
-            end_x3 = 873
-            end_y3 = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "55 minutes")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-
-            confirm = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인")
-            confirm.click()
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작 시간\n 오전 11 : 50")
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "종료 시간\n 오후 10 : 55")
-
-            # default 시간 복구 및 방해금지 Off
-            self.driver.tap([(840, 574)])
-            time.sleep(0.5)
-
-            max_swipes = 24
-            start_x = 215
-            start_y = 1707
-            end_x = 215
-            end_y = 1707-60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "12 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x, start_y, end_x, end_y, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 60
-            start_x1 = 331
-            start_y1 = 1707
-            end_x1 = 797
-            end_y1 = 1707-60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "0 minutes")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x1, start_y1, end_x1, end_y1, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 24
-            start_x3 = 738
-            start_y3 = 1707
-            end_x3 = 738
-            end_y3 = 1707-60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "23 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 60
-            start_x3 = 873
-            start_y3 = 1707
-            end_x3 = 873
-            end_y3 = 1707-60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.SeekBar[@content-desc='0 minutes'])[2]")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-
-            confirm = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인")
-            confirm.click()
-
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작 시간\n 오후 12 : 00")
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "종료 시간\n 오후 11 : 00")
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시작 시간\n 오후 12 : 00").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "종료 시간\n 오후 11 : 00").is_displayed()
 
             toggle_btn = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.Switch")
             toggle_btn.click()
@@ -296,75 +148,8 @@ class SideMenu(unittest.TestCase):
             if not is_on:
                 toggle_btn.click()  # OFF면 클릭해서 ON으로 변경
 
-            self.driver.tap([(840, 574)])
-
-            max_swipes = 24
-            start_x = 215
-            start_y = 1707
-            end_x = 215
-            end_y = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "12 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x, start_y, end_x, end_y, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 60
-            start_x1 = 331
-            start_y1 = 1707
-            end_x1 = 797
-            end_y1 = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.SeekBar[@content-desc='0 minutes'])[1]")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x1, start_y1, end_x1, end_y1, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 24
-            start_x3 = 738
-            start_y3 = 1707
-            end_x3 = 738
-            end_y3 = 1707-60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "3 o'clock")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
-
-            max_swipes = 60
-            start_x3 = 873
-            start_y3 = 1707
-            end_x3 = 873
-            end_y3 = 1707+60
-            duration = 200
-
-            for _ in range(max_swipes):
-                try:
-                    element = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.SeekBar[@content-desc='0 minutes'])[2]")
-                    if element.is_displayed():
-                        break
-                except NoSuchElementException:
-                    self.driver.swipe(start_x3, start_y3, end_x3, end_y3, duration)
-            else:
-                raise NoSuchElementException("찾을 수 없습니다.")
+            # 시작 12:00 / 종료 03:00 설정 후 확인
+            utils.set_dnd_time(self, 12, 0, 3, 0, confirm=False)
 
             confirm = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인")
             confirm.click()
@@ -457,7 +242,7 @@ class SideMenu(unittest.TestCase):
             # 공간 메인 화면 이동 확인
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1").is_displayed()
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "출입문").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Door").is_displayed()  # 2.2.0: 탭 이름 출입문 -> Door
 
             print("DQS-T14226 설정 페이지에서 뒤로가기 버튼 기능 동작 확인 | Pass")
 
@@ -483,7 +268,7 @@ class SideMenu(unittest.TestCase):
             # 공간 메인 화면 이동 확인
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1").is_displayed()
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "출입문").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Door").is_displayed()  # 2.2.0: 탭 이름 출입문 -> Door
 
             print("DQS-T14227 내 계정 페이지의 뒤로가기 버튼 기능 동작 확인 | Pass")
 
@@ -509,7 +294,7 @@ class SideMenu(unittest.TestCase):
             # 공간 메인 화면 이동 확인
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Visitor Place1").is_displayed()
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 설정").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "출입문").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Door").is_displayed()  # 2.2.0: 탭 이름 출입문 -> Door
 
             print("DQS-T14228 고객센터 페이지의 뒤로가기 버튼 기능 동작 확인 | Pass")
 
@@ -601,14 +386,15 @@ class SideMenu(unittest.TestCase):
             cl1.click()
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "오픈 소스").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "_fe_analyzer_shared 61.0.0\nLogic that is shared between the front_end and analyzer packages.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "_flutterfire_internals 1.3.7\nA package hosting Dart code shared between FlutterFire plugins.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "analyzer 5.13.0\nThis package provides a library that performs static analysis of Dart code.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "ansicolor 2.0.2\nLooking to add some color to your terminal logs? `ansicolor` is an xterm-256 color support library that lets you change the foreground and background color of your text.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "archive 3.5.1\nProvides encoders and decoders for various archive and compression formats such as zip, tar, bzip2, gzip, and zlib.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "args 2.5.0\nLibrary for defining parsers for parsing raw command-line arguments into a set of options and values using GNU and POSIX style options.").is_displayed()
+            # 2.2.0 기준 오픈 소스 목록 첫 화면 (2026-11-18 기기 확인)
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "_flutterfire_internals 1.3.49\nA package hosting Dart code shared between FlutterFire plugins.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "action_slider 0.7.0\nA slider to confirm actions and provide feedback on the success of these after subsequent loading.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "ansicolor 2.0.3\nLooking to add some color to your terminal logs? `ansicolor` is an xterm-256 color support library that lets you change the foreground and background color of your text.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "archive 4.6.0\nProvides encoders and decoders for various archive and compression formats such as zip, tar, bzip2, gzip, zlib, xz, and zstd.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "args 2.7.0\nLibrary for defining parsers for parsing raw command-line arguments into a set of options and values using GNU and POSIX style options.").is_displayed()
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "async 2.11.0\nUtility functions and classes related to the 'dart:async' library.").is_displayed()
-            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "bloc 8.1.4\nA predictable state management library that helps implement the BLoC (Business Logic Component) design pattern.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "audio_session 0.1.25\nSets the iOS audio session category and Android audio attributes for your app, and manages your app's audio focus, mixing and ducking behaviour.").is_displayed()
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "boolean_selector 2.1.1\nA flexible syntax for boolean expressions, based on a simplified version of Dart's expression syntax.").is_displayed()
 
             prev = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.ImageView")
             prev.click()
@@ -946,7 +732,7 @@ class SideMenu(unittest.TestCase):
             print(f"추출한 text 값 : {text1}")
             self.assertEqual(text1, "••••••••••")
 
-            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             passwordLook1.click()
 
             passwordInput2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Kjstar36!@']")
@@ -963,7 +749,7 @@ class SideMenu(unittest.TestCase):
             print(f"추출한 text 값 : {text3}")
             self.assertEqual(text3, "••••••••••")
 
-            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             rePasswordLook2.click()
 
             rePasswordInput2 = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.EditText[@text='Kjstar36!@'])[2]")
@@ -1899,7 +1685,7 @@ class AC(unittest.TestCase):
             is_enabled = modifyBtn0.get_attribute("enabled")
             self.assertEqual(is_enabled, "false", "수정 버튼 비활성화")
 
-            nameDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/android.widget.ImageView")
+            nameDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/following-sibling::*[1][self::android.widget.ImageView]")
             nameDel.click()
 
             dnIB = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -1924,7 +1710,7 @@ class AC(unittest.TestCase):
             setting1 = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Test_1")
             setting1.click()
 
-            nameDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Test_1']/android.widget.ImageView")
+            nameDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Test_1']/following-sibling::*[1][self::android.widget.ImageView]")
             nameDel.click()
 
             dnIB = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3068,7 +2854,7 @@ class AC(unittest.TestCase):
             device_setting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "BS3_538200888")
             device_setting.click()
 
-            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/android.widget.ImageView")
+            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete.click()
 
             dnIB = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3387,14 +3173,14 @@ class AC(unittest.TestCase):
             device_setting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "BS3_538200888")
             device_setting.click()
 
-            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/android.widget.ImageView")
+            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='BS3_538200888']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete.click()
 
             dnIB = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
             dnIB.click()
             dnIB.send_keys("1")
 
-            name_delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1']/android.widget.ImageView")
+            name_delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete2.click()
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText").is_displayed()
@@ -3413,6 +3199,8 @@ class Video(unittest.TestCase):
         self.driver.implicitly_wait(10)
 
         utils.mobile_login(self, "01011111111", "Kjstar36!!")
+        utils.move_place(self, "비디오 공간")  # 로그인 직후 공간은 마지막 사용 공간이라 고정 아님 → 비디오 공간으로 이동
+        time.sleep(2)
 
     def tearDown(self):
         self.driver.quit()
@@ -3421,9 +3209,10 @@ class Video(unittest.TestCase):
         try:
             print("DQS-T14028 비디오 최대화/최소화 버튼 기능 동작 확인")
 
+            time.sleep(2)
             #최대화(가로모드) 버튼 클릭
             self.driver.tap([(1004, 1132)])
-            time.sleep(3)
+            time.sleep(2)
 
             try:
                 self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간")
@@ -3434,7 +3223,7 @@ class Video(unittest.TestCase):
 
             # 최소화 버튼 클릭
             self.driver.tap([(71, 2137)])
-            time.sleep(3)
+            time.sleep(2)
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간")
 
@@ -3451,6 +3240,7 @@ class Video(unittest.TestCase):
         try:
             print("DQS-T14029 비디오명 변경 기능 동작 확인")
 
+            time.sleep(2)
             self.driver.tap([(1004, 522)])
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "카메라 설정")
@@ -3473,7 +3263,7 @@ class Video(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Test1']")
 
-            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Test1']/android.widget.ImageView")
+            name_delete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Test1']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete.click()
 
             name_input = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3508,9 +3298,10 @@ class Video(unittest.TestCase):
         try:
             print("DQS-T14030 비디오 멀티뷰에서 특정 비디오 선택 시 동작 확인 || DQS-T14027 비디오 뷰 변경 버튼 기능 동작 확인")
 
-            multi_view1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[6]/android.widget.ImageView[1]")
+            time.sleep(2)
+            multi_view1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[7]/android.widget.ImageView[1]")
             multi_view1.click()
-            time.sleep(1)
+            time.sleep(2)
 
             #1번 채널 선택
             self.driver.tap([(260, 644)])
@@ -3527,9 +3318,9 @@ class Video(unittest.TestCase):
                 self.driver.back()
                 time.sleep(1)
 
-            multi_view2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[6]/android.widget.ImageView[1]")
+            multi_view2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[7]/android.widget.ImageView[1]")
             multi_view2.click()
-            time.sleep(1)
+            time.sleep(2)
 
             #2번 채널 선택
             self.driver.tap([(774, 631)])
@@ -3548,11 +3339,11 @@ class Video(unittest.TestCase):
 
             #최소화 복구
             self.driver.tap([(71, 2144)])
-            time.sleep(1)
+            time.sleep(2)
 
-            multi_view3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[5]/android.widget.ImageView[1]")
+            multi_view3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[6]/android.widget.ImageView[1]")
             multi_view3.click()
-            time.sleep(1)
+            time.sleep(2)
 
             #3번 채널 선택
             self.driver.tap([(258, 1019)])
@@ -3569,36 +3360,36 @@ class Video(unittest.TestCase):
                 self.driver.back()
                 time.sleep(1)
 
-            multi_view4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[6]/android.widget.ImageView[1]")
+            multi_view4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[7]/android.widget.ImageView[1]")
             multi_view4.click()
-            time.sleep(1)
+            time.sleep(2)
 
-            #4번 채널 선택
-            self.driver.tap([(796, 1003)])
-            time.sleep(1)
+            # #4번 채널 선택
+            # self.driver.tap([(796, 1003)])
+            # time.sleep(1)
+            #
+            # #선택한 채널이름 추출할 수 없어서 1ch 변경 후 최대화 확인
+            # self.driver.tap([(1003, 1131)])
+            # time.sleep(1)
+            #
+            # try:
+            #     self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간")
+            #     # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
+            #     assert False, "전체화면 전환안됨, 공간 명 출력됨"
+            # except NoSuchElementException:
+            #     pass
+            #
+            # #최소화 복구
+            # self.driver.tap([(71, 2144)])
+            # time.sleep(1)
+            #
+            # multi_view5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[5]/android.widget.ImageView[1]")
+            # multi_view5.click()
+            # time.sleep(1)
 
-            #선택한 채널이름 추출할 수 없어서 1ch 변경 후 최대화 확인
-            self.driver.tap([(1003, 1131)])
-            time.sleep(1)
-
-            try:
-                self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "비디오 공간")
-                # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
-                assert False, "전체화면 전환안됨, 공간 명 출력됨"
-            except NoSuchElementException:
-                pass
-
-            #최소화 복구
-            self.driver.tap([(71, 2144)])
-            time.sleep(1)
-
-            multi_view5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[5]/android.widget.ImageView[1]")
-            multi_view5.click()
-            time.sleep(1)
-
-            single_view = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[5]/android.widget.ImageView[2]")
+            single_view = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[7]/android.widget.ImageView[2]")
             single_view.click()
-            time.sleep(1)
+            time.sleep(2)
 
             print("DQS-T14030 비디오 멀티뷰에서 특정 비디오 선택 시 동작 확인 || DQS-T14027 비디오 뷰 변경 버튼 기능 동작 확인 | Pass")
 
@@ -3613,20 +3404,21 @@ class Video(unittest.TestCase):
             print("DQS-T13557 양방향 통화 중 카메라 화면 전환 시 동작 확인")
 
             #1번 > 3번 ch 이동
-            for _ in range(2):
-                start_x1 = 846
-                start_y1 = 819
-                end_x1 = 246
-                end_y1 = 819
-                self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+            # for _ in range(2):
+            #     start_x1 = 846
+            #     start_y1 = 819
+            #     end_x1 = 246
+            #     end_y1 = 819
+            #     self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
 
-
+            time.sleep(2)
             #양방향 통화버튼 선택
-            self.driver.tap([(900, 1133)])
+            self.driver.tap([(899, 1141)])
             time.sleep(1)
 
             assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[1]")
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView")
+            assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[2]")
             #assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, '누르고 말하세요.\n말하는 중에는 들리지 않습니다.') #현재 스피커 방송으로 출력됨
 
             touch_action = TouchAction(self.driver)
@@ -3640,15 +3432,15 @@ class Video(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "잠금\nBS3_538200888")
 
-            # #1번 > 3번 ch 이동
-            # for _ in range(2):
-            #     start_x1 = 846
-            #     start_y1 = 819
-            #     end_x1 = 246
-            #     end_y1 = 819
-            #     self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
-            #
-            # assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "잠금\nBS3_538200888")
+            #1번 > 3번 ch 이동
+            for _ in range(2):
+                start_x1 = 846
+                start_y1 = 819
+                end_x1 = 246
+                end_y1 = 819
+                self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "잠금\nBS3_538200888")
 
             #3번 > 1번 ch 이동
             for _ in range(2):
@@ -3658,19 +3450,13 @@ class Video(unittest.TestCase):
                 end_y2 = 819
                 self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
 
-            #1번 > 3번 ch 이동
-            for _ in range(2):
-                start_x1 = 846
-                start_y1 = 819
-                end_x1 = 246
-                end_y1 = 819
-                self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
 
-            self.driver.tap([(900, 1133)])
+            self.driver.tap([(899, 1141)])
             time.sleep(1)
 
             assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[1]")
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView")
+            assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[2]")
             #assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, '누르고 말하세요.\n말하는 중에는 들리지 않습니다.') #현재 스피커 방송으로 출력됨
 
             touch_action = TouchAction(self.driver)
@@ -3697,20 +3483,22 @@ class Video(unittest.TestCase):
         try:
             print("DQS-T13558 양방향 통화 상태에서 전체 화면(가로 모드) 전환 시 동작 확인")
 
-            #1번 > 3번 ch 이동
-            for _ in range(2):
-                start_x1 = 846
-                start_y1 = 819
-                end_x1 = 246
-                end_y1 = 819
-                self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+            # #1번 > 3번 ch 이동
+            # for _ in range(2):
+            #     start_x1 = 846
+            #     start_y1 = 819
+            #     end_x1 = 246
+            #     end_y1 = 819
+            #     self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
 
+            time.sleep(2)
             #양방향 통화버튼 선택
             self.driver.tap([(900, 1133)])
             time.sleep(1)
 
             assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[1]")
             assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView")
+            assert self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='스피커 방송'])[2]")
             #assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, '누르고 말하세요.\n말하는 중에는 들리지 않습니다.') #현재 스피커 방송으로 출력됨
 
             touch_action = TouchAction(self.driver)
@@ -3768,13 +3556,14 @@ class Video(unittest.TestCase):
             print("DQS-T13559 양방향 통화 종료 기능 동작 확인")
 
             #1번 > 3번 ch 이동
-            for _ in range(2):
-                start_x1 = 846
-                start_y1 = 819
-                end_x1 = 246
-                end_y1 = 819
-                self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+            # for _ in range(2):
+            #     start_x1 = 846
+            #     start_y1 = 819
+            #     end_x1 = 246
+            #     end_y1 = 819
+            #     self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
 
+            time.sleep(2)
             #양방향 통화버튼 선택
             self.driver.tap([(900, 1133)])
             time.sleep(1)
@@ -3815,12 +3604,12 @@ class Video(unittest.TestCase):
         try:
             print("DQS-T13561 양방향 통화 기능이 없는 카메라 싱글뷰에서 양방향 통화 버튼 확인")
 
-            # #1번 > 2번 ch 이동 - 2번 ch 양방향 통화 기는 없는 카메라
-            # start_x1 = 846
-            # start_y1 = 819
-            # end_x1 = 246
-            # end_y1 = 819
-            # self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+            #1번 > 2번 ch 이동 - 2번 ch 양방향 통화 기는 없는 카메라
+            start_x1 = 846
+            start_y1 = 819
+            end_x1 = 246
+            end_y1 = 819
+            self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
 
             #양방향 톻화버튼 선택
             self.driver.tap([(900, 1133)])
@@ -4894,7 +4683,7 @@ class IO(unittest.TestCase):
             relay_name_input1.send_keys("테스트 AB12 テスト 34한글")
             time.sleep(0.5)
 
-            name_delete1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='테스트 AB12 テスト 34한글']/android.widget.ImageView")
+            name_delete1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='테스트 AB12 テスト 34한글']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete1.click()
             print("------------------- 테스트 AB12 テスト 34한글 완료")
 
@@ -4903,7 +4692,7 @@ class IO(unittest.TestCase):
             relay_name_input2.send_keys("-_-")
             time.sleep(0.5)
 
-            name_delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='-_-']/android.widget.ImageView")
+            name_delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='-_-']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete2.click()
             print("------------------- -_- 완료")
 
@@ -4923,7 +4712,7 @@ class IO(unittest.TestCase):
             is_enabled = modify_btn.get_attribute("enabled")
             self.assertEqual(is_enabled, "false", "수정 버튼 비활성화")
 
-            name_delete3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='~!@#']/android.widget.ImageView")
+            name_delete3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='~!@#']/following-sibling::*[1][self::android.widget.ImageView]")
             name_delete3.click()
             print("------------------- ~!@# 완료")
 
@@ -5909,7 +5698,208 @@ class IO(unittest.TestCase):
             print(str(e))
             self.fail()
 
+    def test_DQS_T777777_15_T777777_16(self):
+        try:
+            print("DQS_T777777_15 I/O Relay 메뉴에서 스케줄 추가 동작 확인 || DQS_T777777_16 I/O Relay 메뉴에서 스케줄 삭제 동작 확인")
 
+            #I/O 탭 출력 확인
+            io_tab = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "I/O")
+            io_tab.click()
+            time.sleep(0.5)
+
+            # I/O 메뉴 펼치기
+            self.driver.tap([(984, 1253)])
+            time.sleep(1)
+
+            # Test수행할 Relay 선택
+            relay_control = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "DI_24_relay 0\nrelay 0번\nOFF")
+            relay_control.click()
+
+            # 현재 상태 확인
+            status0 = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='Normal Off']")
+            contentDesc0 = status0.get_attribute('content-desc')
+            print(f"Current status : {contentDesc0}")
+
+            relay_setting = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "DI_24_relay 0")
+            relay_setting.click()
+
+            # Relay 스케줄 열림 - 공간에 저장된 스케줄 선택
+            schedule_open = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "스케줄 열림\nNo select")
+            schedule_open.click()
+
+            #스케줄 추가
+            addSchedule_add = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "추가")
+            addSchedule_add.click()
+
+            assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "시간 구역 추가")
+
+            scheduleName1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
+            scheduleName1.click()
+            scheduleName1.send_keys("Test_Schedule1")
+
+            self.driver.back()
+
+            monSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[15]")
+            monSchedule.click()
+            time.sleep(1)
+
+            mon_start_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
+            mon_start_hour.click()
+
+            max_swipes = 10
+            start_x = 260
+            start_y = 1960
+            end_x = 260
+            end_y = 1460
+            duration = 200
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "08", (start_x, start_y, end_x, end_y), duration=duration, max_swipes=max_swipes, click=True)
+
+            mon_end_hour = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
+            mon_end_hour.click()
+
+            max_swipes = 10
+            start_x1 = 255
+            start_y1 = 2060
+            end_x1 = 255
+            end_y1 = 1460
+            duration = 200
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "17", (start_x1, start_y1, end_x1, end_y1), duration=duration, max_swipes=max_swipes, click=True)
+
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]") # -버튼 출력 확인
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[21]") # +버튼 출력 확인
+
+            # 아래방향으로 스크롤 이동
+            start_x2 = 779
+            start_y2 = 1920
+            end_x2 = 779
+            end_y2 = 390
+            self.driver.swipe(start_x2, start_y2, end_x2, end_y2)
+            time.sleep(1)
+
+            # 수요일 + 버튼 선택
+            wedSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[2]")
+            wedSchedule.click()
+            time.sleep(1)
+
+            wed_start_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
+            wed_start_hour.click()
+
+            time_zero = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "00")
+            time_zero.click()
+
+            wed_end_hour = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
+            wed_end_hour.click()
+
+            max_swipes = 10
+            start_x3 = 260
+            start_y3 = 1320
+            end_x3 = 260
+            end_y3 = 720
+            duration = 80
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "23", (start_x3, start_y3, end_x3, end_y3), duration=duration, max_swipes=max_swipes, click=True)
+
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[5]") # -버튼 출력 확인
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[8]") # +버튼 출력 확인
+
+            wed_end_min = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='00'])[3]")
+            wed_end_min.click()
+
+            max_swipes = 40
+            start_x4 = 700
+            start_y4 = 1300
+            end_x4 = 700
+            end_y4 = 725
+            duration = 80
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "59", (start_x4, start_y4, end_x4, end_y4), duration=duration, max_swipes=max_swipes, click=True)
+
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[5]") # -버튼 출력 확인
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[8]") # +버튼 출력 확인
+
+            #금요일 시간 설정
+            friSchedule = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[12]")
+            friSchedule.click()
+            time.sleep(1)
+
+            fri_start_hour = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='09'])[1]")
+            fri_start_hour.click()
+
+            max_swipes = 10
+            start_x5 = 255
+            start_y5 = 1821
+            end_x5 = 255
+            end_y5 = 1275
+            duration = 220
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "08", (start_x5, start_y5, end_x5, end_y5), duration=duration, max_swipes=max_swipes, click=True)
+
+            fri_start_min = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='00'])[3]")
+            fri_start_min.click()
+
+            max_swipes = 40
+            start_x6 = 716
+            start_y6 = 1830
+            end_x6 = 716
+            end_y6 = 1257
+            duration = 150
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "30", (start_x6, start_y6, end_x6, end_y6), duration=duration, max_swipes=max_swipes, click=True)
+
+            fri_end_hour = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "09")
+            fri_end_hour.click()
+
+            max_swipes = 10
+            start_x7 = 255
+            start_y7 = 1821
+            end_x7 = 255
+            end_y7 = 1275
+            duration = 150
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "17", (start_x7, start_y7, end_x7, end_y7), duration=duration, max_swipes=max_swipes, click=True)
+
+            fri_end_min = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='00'])[3]")
+            fri_end_min.click()
+
+            max_swipes = 40
+            start_x8 = 716
+            start_y8 = 1830
+            end_x8 = 716
+            end_y8 = 1257
+            duration = 150
+
+            element = utils.swipe_until_found(self, AppiumBy.ACCESSIBILITY_ID, "30", (start_x8, start_y8, end_x8, end_y8), duration=duration, max_swipes=max_swipes, click=True, required=False)
+
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[15]") # -버튼 출력 확인
+            assert self.driver.find_element(AppiumBy.XPATH, "//android.widget.ScrollView/android.view.View[18]") # +버튼 출력 확인
+
+            save_btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "저장")
+            save_btn.click()
+            time.sleep(1)
+
+            # DQS_T777777_16 I/O Relay 메뉴에서 스케줄 삭제 동작 확인
+            delete_Schedule1 = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='Test_Schedule1']/android.widget.ImageView[2]")
+            delete_Schedule1.click()
+
+            delete_btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "삭제")
+            delete_btn.click()
+
+            try:
+                self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Test_Schedule1")
+            except NoSuchElementException:
+                pass
+
+            pass
+
+            print("DQS_T777777_15 I/O Relay 메뉴에서 스케줄 추가 동작 확인 || DQS_T777777_16 I/O Relay 메뉴에서 스케줄 삭제 동작 확인 | Pass")
+
+        except Exception as e:
+            capture_screenshot(self.driver, self._testMethodName)
+            print(f"{self._testMethodName} | Failed")
+            print(str(e))
+            self.fail()
 
 
 

@@ -33,10 +33,10 @@ Password : Kjstar36!!
 """
 
 " XPath "
-phoneNumberInputBox = "//android.widget.ImageView[@content-desc=\"휴대폰 번호\n비밀번호\"]/android.widget.EditText[1]"
-passwordInputBox = "//android.widget.ImageView[@content-desc=\"휴대폰 번호\n비밀번호\"]/android.widget.EditText[2]"
-emailInputBox = "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]"
-emailPasswordInputBox = "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]"
+phoneNumberInputBox = "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.widget.ImageView/android.view.View[2]/android.widget.EditText[1]"
+passwordInputBox = "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.widget.ImageView/android.view.View[2]/android.widget.EditText[2]"
+emailInputBox = "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]"
+emailPasswordInputBox = "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]"
 lead = "//android.widget.FrameLayout[@resource-id=\"android:id/content\"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.widget.ImageView"
 
 " AccessBilityID "
@@ -860,7 +860,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text1}")
             self.assertEqual(text1, "••••••••••")
 
-            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             passwordLook1.click()
 
             passwordInput2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Kjstar36!@']")
@@ -877,7 +877,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text3}")
             self.assertEqual(text3, "••••••••••")
 
-            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             rePasswordLook2.click()
 
             rePasswordInput2 = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.EditText[@text='Kjstar36!@'])[2]")
@@ -996,7 +996,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text1}")
             self.assertEqual(text1, "••••••••••")
 
-            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            passwordLook1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             passwordLook1.click()
 
             passwordInput2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Kjstar36!@']")
@@ -1013,7 +1013,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text3}")
             self.assertEqual(text3, "••••••••••")
 
-            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/android.widget.ImageView")
+            rePasswordLook2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='••••••••••']/following-sibling::*[1][self::android.widget.ImageView]")
             rePasswordLook2.click()
 
             rePasswordInput2 = self.driver.find_element(AppiumBy.XPATH, "(//android.widget.EditText[@text='Kjstar36!@'])[2]")
@@ -1301,7 +1301,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc1}")
             self.assertEqual(contentDesc1, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가나다@suprema.co.kr']/android.widget.ImageView")
+            inputDel1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가나다@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel1.click()
 
             emailInput2 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1318,7 +1318,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc2}")
             self.assertEqual(contentDesc2, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123456789']/android.widget.ImageView")
+            inputDel2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123456789']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel2.click()
 
             emailInput3 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1335,7 +1335,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc3}")
             self.assertEqual(contentDesc3, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='ABCDEFGH']/android.widget.ImageView")
+            inputDel3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='ABCDEFGH']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel3.click()
 
             emailInput4 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1352,7 +1352,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc4}")
             self.assertEqual(contentDesc4, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='abcdefgh']/android.widget.ImageView")
+            inputDel4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='abcdefgh']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel4.click()
 
             emailInput5 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1369,7 +1369,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc5}")
             self.assertEqual(contentDesc5, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p1@suprema.']/android.widget.ImageView")
+            inputDel5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p1@suprema.']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel5.click()
 
             emailInput6 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1386,7 +1386,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc6}")
             self.assertEqual(contentDesc6, "이메일 주소\n입력 형식이 맞지 않습니다.")
 
-            inputDel6 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p1@suprema.co.kr.']/android.widget.ImageView")
+            inputDel6 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p1@suprema.co.kr.']/following-sibling::*[1][self::android.widget.ImageView]")
             inputDel6.click()
 
             nextDisabled = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, authRequest)
@@ -1520,7 +1520,7 @@ class IntroScreen(unittest.TestCase):
             confirmBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, confirm)
             confirmBtn.click()
 
-            emailDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+ba@suprema.co.kr']/android.widget.ImageView")
+            emailDel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+ba@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
             emailDel.click()
 
             emailinput2 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -1728,7 +1728,7 @@ class IntroScreen(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.\n비밀번호").is_displayed()
 
-            st2clear = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/android.widget.ImageView")
+            st2clear = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/following-sibling::*[1][self::android.widget.ImageView]")
             st2clear.click()
 
             st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc='휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.\n비밀번호']/android.widget.EditText[1]")
@@ -1774,7 +1774,7 @@ class IntroScreen(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.\n비밀번호").is_displayed()
 
-            st7clear = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 456 789']/android.widget.ImageView")
+            st7clear = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 456 789']/following-sibling::*[1][self::android.widget.ImageView]")
             st7clear.click()
 
             st8 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc='휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.\n비밀번호']/android.widget.EditText[1]")
@@ -1806,14 +1806,14 @@ class IntroScreen(unittest.TestCase):
             st2.click()
             st2.send_keys("01011112222")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/android.widget.ImageView").is_displayed()
-            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/following-sibling::*[1][self::android.widget.ImageView]")
             st3.click()
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.\n비밀번호").is_displayed()
 
             try:
-                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/android.widget.ImageView")
+                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 1111 2222']/following-sibling::*[1][self::android.widget.ImageView]")
                 # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
                 #assert False, "인풋 필드에 텍스트가 없는데 X 버튼 출력됨 확인 필요"
             except NoSuchElementException:
@@ -1828,12 +1828,12 @@ class IntroScreen(unittest.TestCase):
             st6.click()
             st6.send_keys("kjjung+p3@suprema.co.kr")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/android.widget.ImageView").is_displayed()
-            st7 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st7 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
             st7.click()
 
             try:
-                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/android.widget.ImageView")
+                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p3@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
                 # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
                 # assert False, "인풋 필드에 텍스트가 없는데 X 버튼 출력됨 확인 필요"
             except NoSuchElementException:
@@ -2209,7 +2209,7 @@ class IntroScreen(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.").is_displayed()
 
-            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/android.widget.ImageView")
+            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/following-sibling::*[1][self::android.widget.ImageView]")
             deleteBtn.click()
 
             st9 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -2222,7 +2222,7 @@ class IntroScreen(unittest.TestCase):
 
             assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "휴대폰 번호\n올바른 휴대폰 번호를 입력해 주세요.").is_displayed()
 
-            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 456 789']/android.widget.ImageView")
+            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 456 789']/following-sibling::*[1][self::android.widget.ImageView]")
             deleteBtn.click()
 
             st10 = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
@@ -2335,8 +2335,8 @@ class IntroScreen(unittest.TestCase):
             st3.click()
             st3.send_keys("01022221111")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/android.widget.ImageView").is_displayed()
-            st4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/following-sibling::*[1][self::android.widget.ImageView]")
             st4.click()
 
             assert self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput).is_displayed()
@@ -2369,8 +2369,8 @@ class IntroScreen(unittest.TestCase):
             st2.click()
             st2.send_keys("kjjung+p2@suprema.co.kr")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p2@suprema.co.kr']/android.widget.ImageView").is_displayed()
-            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p2@suprema.co.kr']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p2@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung+p2@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
             st3.click()
 
             assert self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput).is_displayed()
@@ -2764,7 +2764,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text1}")
             self.assertEqual(text1, "Ab")
 
-            delete1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab']/android.widget.ImageView")
+            delete1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab']/following-sibling::*[1][self::android.widget.ImageView]")
             delete1.click() #DQS-T14149 회원가입에 프로필 입력 이름 인풋 박스 X 버튼 기능 동작 확인 포함됨
             print("------------------- Ab 완료")
 
@@ -2777,7 +2777,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text2}")
             self.assertEqual(text2, "12")
 
-            delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='12']/android.widget.ImageView")
+            delete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='12']/following-sibling::*[1][self::android.widget.ImageView]")
             delete2.click()
             print("------------------- 12 완료")
 
@@ -2790,7 +2790,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text3}")
             self.assertEqual(text3, "-_")
 
-            delete3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='-_']/android.widget.ImageView")
+            delete3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='-_']/following-sibling::*[1][self::android.widget.ImageView]")
             delete3.click()
             print("------------------- -_ 완료")
 
@@ -2809,7 +2809,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc1}")
             self.assertEqual(contentDesc1, "공백,-,_, 외의 특수문자는 사용할 수 없습니다.")
 
-            delete4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='!@#$%^&*()']/android.widget.ImageView")
+            delete4 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='!@#$%^&*()']/following-sibling::*[1][self::android.widget.ImageView]")
             delete4.click()
             print("------------------- !@#$%^&*() 완료")
 
@@ -2822,7 +2822,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text5}")
             self.assertEqual(text5, "Ab1")
 
-            delete5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab1']/android.widget.ImageView")
+            delete5 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab1']/following-sibling::*[1][self::android.widget.ImageView]")
             delete5.click()
             print("------------------- Ab1 완료")
 
@@ -2835,7 +2835,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text6}")
             self.assertEqual(text6, "Ab가")
 
-            delete6 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab가']/android.widget.ImageView")
+            delete6 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab가']/following-sibling::*[1][self::android.widget.ImageView]")
             delete6.click()
             print("------------------- Ab가 완료")
 
@@ -2848,7 +2848,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text7}")
             self.assertEqual(text7, "Ab-_")
 
-            delete7 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab-_']/android.widget.ImageView")
+            delete7 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab-_']/following-sibling::*[1][self::android.widget.ImageView]")
             delete7.click()
             print("------------------- Ab-_ 완료")
 
@@ -2867,7 +2867,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc2}")
             self.assertEqual(contentDesc2, "공백,-,_, 외의 특수문자는 사용할 수 없습니다.")
 
-            delete8 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab!']/android.widget.ImageView")
+            delete8 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Ab!']/following-sibling::*[1][self::android.widget.ImageView]")
             delete8.click()
             print("------------------- Ab! 완료")
 
@@ -2881,7 +2881,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text9}")
             self.assertEqual(text9, "1가")
 
-            delete9 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1가']/android.widget.ImageView")
+            delete9 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1가']/following-sibling::*[1][self::android.widget.ImageView]")
             delete9.click()
             print("------------------- 1가 완료")
 
@@ -2894,7 +2894,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text10}")
             self.assertEqual(text10, "1-_")
 
-            delete10 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1-_']/android.widget.ImageView")
+            delete10 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='1-_']/following-sibling::*[1][self::android.widget.ImageView]")
             delete10.click()
             print("------------------- 1-_ 완료")
 
@@ -2907,7 +2907,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 text 값 : {text11}")
             self.assertEqual(text11, "가-_")
 
-            delete11 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가-_']/android.widget.ImageView")
+            delete11 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가-_']/following-sibling::*[1][self::android.widget.ImageView]")
             delete11.click()
             print("------------------- 가-_ 완료")
 
@@ -2926,7 +2926,7 @@ class IntroScreen(unittest.TestCase):
             print(f"추출한 content-desc 값 : {contentDesc3}")
             self.assertEqual(contentDesc3, "공백,-,_, 외의 특수문자는 사용할 수 없습니다.")
 
-            delete12 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가!@#$%^&*()']/android.widget.ImageView")
+            delete12 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='가!@#$%^&*()']/following-sibling::*[1][self::android.widget.ImageView]")
             delete12.click()
             print("------------------- 가!@#$%^&*() 완료")
 
@@ -3099,7 +3099,7 @@ class IntroScreen(unittest.TestCase):
             isNext1 = authRequset1.is_enabled()
             self.assertFalse(isNext1, "인증요청 버튼이 비활성화되어 있습니다.")
 
-            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/android.widget.ImageView")
+            deleteBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='123 4567 8901']/following-sibling::*[1][self::android.widget.ImageView]")
             deleteBtn.click()
 
             st9 = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3205,8 +3205,8 @@ class IntroScreen(unittest.TestCase):
             st3.click()
             st3.send_keys("01022221111")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/android.widget.ImageView").is_displayed()
-            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/following-sibling::*[1][self::android.widget.ImageView]")
             st3.click()
 
             st4 = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3215,7 +3215,7 @@ class IntroScreen(unittest.TestCase):
             self.assertEqual("", re)
 
             try:
-                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/android.widget.ImageView")
+                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='010 2222 1111']/following-sibling::*[1][self::android.widget.ImageView]")
                 # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
                 #assert True, "인풋 필드에 텍스트가 없는데 X 버튼 출력됨 확인 필요"
             except NoSuchElementException:
@@ -3245,8 +3245,8 @@ class IntroScreen(unittest.TestCase):
             st3.click()
             st3.send_keys("kjjung@suprema.co.kr")
 
-            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/android.widget.ImageView").is_displayed()
-            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/android.widget.ImageView")
+            self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]").is_displayed()
+            st3 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
             st3.click()
 
             st4 = self.driver.find_element(AppiumBy.CLASS_NAME, "android.widget.EditText")
@@ -3255,7 +3255,7 @@ class IntroScreen(unittest.TestCase):
             self.assertEqual("", re)
 
             try:
-                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/android.widget.ImageView")
+                self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='kjjung@suprema.co.kr']/following-sibling::*[1][self::android.widget.ImageView]")
                 # 요소가 존재한다면, 여기서 예외가 발생하지 않으므로 테스트 실패
                 #assert True, "인풋 필드에 텍스트가 없는데 X 버튼 출력됨 확인 필요"
             except NoSuchElementException:
@@ -4525,11 +4525,11 @@ class IntroScreen(unittest.TestCase):
             login_button.click()
 
             emailAdress1 = "kjjung+ba@suprema.co.kr"
-            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]")
+            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]")
             email_input_box.click()
             email_input_box.send_keys(emailAdress1)
 
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]")
+            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]")
             password_input_box.click()
             password_input_box.send_keys("Kjstar36!!")
 
@@ -4566,11 +4566,11 @@ class IntroScreen(unittest.TestCase):
             login_button.click()
 
             emailAdress1 = "kjjung+ba222@suprema.co.kr"
-            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]")
+            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]")
             email_input_box.click()
             email_input_box.send_keys(emailAdress1)
 
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]")
+            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]")
             password_input_box.click()
             password_input_box.send_keys("Kjstar36!!")
 
@@ -4608,11 +4608,11 @@ class IntroScreen(unittest.TestCase):
             login_button.click()
 
             emailAdress1 = "kjjung+dist1@suprema.co.kr"
-            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]")
+            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]")
             email_input_box.click()
             email_input_box.send_keys(emailAdress1)
 
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]")
+            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]")
             password_input_box.click()
             password_input_box.send_keys("Kjstar36!!")
 
@@ -4649,11 +4649,11 @@ class IntroScreen(unittest.TestCase):
             login_button.click()
 
             emailAdress1 = "kjjung+dist2@suprema.co.kr"
-            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]")
+            email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]")
             email_input_box.click()
             email_input_box.send_keys(emailAdress1)
 
-            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]")
+            password_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]")
             password_input_box.click()
             password_input_box.send_keys("Kjstar36!!")
 

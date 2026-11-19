@@ -1,4 +1,5 @@
 import re
+import html
 import time
 import datetime
 import requests
@@ -8,7 +9,7 @@ from appium.webdriver.common.appiumby import AppiumBy
 from appium.options.android import UiAutomator2Options
 import os
 
-from setuptools.command.build_ext import if_dl
+#from setuptools.command.build_ext import if_dl
 
 from configuration.webDriver import AppiumConfig
 from configuration.utill import capture_screenshot
@@ -24,10 +25,11 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 
 
 " XPath "
-phoneNumberInputBox = "//android.widget.ImageView[@content-desc=\"휴대폰 번호\n비밀번호\"]/android.widget.EditText[1]"
-passwordInputBox = "//android.widget.ImageView[@content-desc=\"휴대폰 번호\n비밀번호\"]/android.widget.EditText[2]"
-emailInputBox = "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]"
-emailPasswordInputBox = "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[2]"
+# 2.2.0 구조: View('휴대폰 번호') → ImageView('+82') → EditText / View('비밀번호') → EditText
+phoneNumberInputBox = "//android.view.View[@content-desc='휴대폰 번호']/following-sibling::android.widget.EditText[1]"
+passwordInputBox = "//android.view.View[@content-desc='비밀번호']/following-sibling::android.widget.EditText[1]"
+emailInputBox = "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]"
+emailPasswordInputBox = "//android.view.View[@content-desc='비밀번호']/following-sibling::*[1][self::android.widget.EditText]"
 lead = "//android.widget.FrameLayout[@resource-id=\"android:id/content\"]/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View[1]/android.widget.ImageView"
 
 " AccessBilityID "
@@ -46,102 +48,128 @@ emailLogin = "이메일로 로그인"
 signUpInput = "android.widget.EditText"
 widgetImage = "android.widget.ImageView"
 
-def authCode(self):
-    self.driver.press_keycode(3)
-    # 홈화면
+OUTLOOK_PKG = "com.microsoft.office.outlook"
+OUTLOOK_ID = OUTLOOK_PKG + ":id/"
+_last_outlook_code = None  # 직전에 읽은 인증번호 (같은 번호를 다시 읽으면 이전 메일로 판단)
+
+
+def _find_auth_code_in_source(self):
+    """화면 XML(page_source)을 한 번만 받아 메일 본문의 6자리 인증번호를 찾는다.
+    (요소마다 get_attribute를 호출하던 방식보다 훨씬 빠름)"""
+    found = re.findall(r'<android\.view\.View\b[^>]*\btext="(\d{6})"', self.driver.page_source)
+    return found[0] if found else None
+
+
+def _parse_outlook_time(text, today):
+    """메일 헤더의 수신 시각('오후 1:20', '오전 11:25')을 오늘 날짜의 datetime으로 변환.
+    날짜가 붙은 표시('11월 17일', '어제' 등)는 오늘 메일이 아니므로 None."""
+    m = re.search(r"(오전|오후)\s*(\d{1,2}):(\d{2})", text or "")
+    if not m:
+        return None
+    hour = int(m.group(2)) % 12 + (12 if m.group(1) == "오후" else 0)
+    return today.replace(hour=hour, minute=int(m.group(3)), second=0, microsecond=0)
+
+
+def _tap_latest_mail(self):
+    """메일 목록 첫 번째 메일 열기. 목록이 Compose라 행이 요소로 잡히지 않아
+    목록 영역(conversation_list)의 위치를 기준으로 첫 행을 탭한다. (기존 고정 좌표 497,358과 동일 위치)"""
+    lst = self.driver.find_elements(AppiumBy.ID, OUTLOOK_ID + "conversation_list")
+    if lst:
+        r = lst[0].rect
+        self.driver.tap([(r["x"] + r["width"] // 2, r["y"] + 98)])
+    else:
+        self.driver.tap([(497, 358)])
+
+
+def get_outlook_auth_code(self, expected_to=None, max_attempts=5):
+    """Outlook Clue 폴더의 최신 메일에서 6자리 인증번호를 읽어 반환한다.
+
+    새 메일 판단 (메일 헤더는 재실행 없이 바로 읽힘 → 오래된 메일이면 재실행 없이 바로 새로고침):
+      1) 수신 시각이 이 함수 호출 시각(기기 시계, 분 단위) - 1분 이후일 것
+      2) expected_to가 주어지면 받는 사람 주소가 일치할 것
+      3) 읽은 인증번호가 직전에 읽은 번호와 다를 것
+    메일 본문(인증번호)은 Outlook을 홈으로 보냈다가 다시 실행해야 읽을 수 있어 재실행 단계를 유지한다.
+    끝까지 못 찾으면 예외를 발생시킨다.
+    반환 시 화면: Outlook (메일 닫기 완료)"""
+    global _last_outlook_code
+    started = time.time()
+    device_now = datetime.datetime.strptime(self.driver.get_device_time("YYYY-MM-DD HH:mm"), "%Y-%m-%d %H:%M")
+    not_before = device_now - datetime.timedelta(minutes=1)
+
+    self.driver.press_keycode(3)  # 홈화면
+    time.sleep(1)
+    if "outlook" not in self.driver.current_package:
+        self.driver.activate_app(OUTLOOK_PKG)
+
+    WebDriverWait(self.driver, 10).until(lambda d: d.find_elements(AppiumBy.ID, OUTLOOK_ID + "account_button"))
+    self.driver.find_element(AppiumBy.ID, OUTLOOK_ID + "account_button").click()
+    clueBtn = self.driver.find_element(AppiumBy.XPATH, "(//*[@resource-id='com.microsoft.office.outlook:id/drawer_folder_composable']//android.widget.TextView[@text='Clue'])[1]")
+    clueBtn.click()
     time.sleep(2)
 
-    while True:
-        if "outlook" not in self.driver.current_package:
-            print("앱이 종료되어 다시 실행")
-            self.driver.activate_app("com.microsoft.office.outlook")
-            time.sleep(2)
-
-        accountBtn = self.driver.find_element(AppiumBy.ID, "com.microsoft.office.outlook:id/account_button")
-        accountBtn.click()
-
-        clueBtn = self.driver.find_element(AppiumBy.XPATH, "//androidx.compose.ui.platform.ComposeView[@resource-id='com.microsoft.office.outlook:id/drawer_folder_composable']/android.view.View/android.view.View/android.view.View[2]/android.view.View[3]/android.view.View[1]")
-        clueBtn.click()
-        time.sleep(7)
-
-        for _ in range(3):  # 새로고침
-            start_x1 = 573
-            start_y1 = 291
-            end_x1 = 573
-            end_y1 = 1320
-            self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
-            time.sleep(3)
-
-        self.driver.tap([(497, 358)])
+    reason = ""
+    for attempt in range(1, max_attempts + 1):
+        self.driver.swipe(573, 291, 573, 1320)  # 새로고침
         time.sleep(2)
+        _tap_latest_mail(self)
 
-        MAX_RETRIES = 3
-        WAIT_TIME = 3
-        retries = 0
+        # 메일이 열릴 때까지 대기 (제목 요소)
+        try:
+            WebDriverWait(self.driver, 8).until(lambda d: d.find_elements(AppiumBy.ID, OUTLOOK_ID + "conversation_subject"))
+        except Exception:
+            reason = "메일이 열리지 않음"
+            print(f"{reason} - 다시 시도 ({attempt}/{max_attempts})")
+            continue
 
-        while retries < MAX_RETRIES:
-            elements = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-            count = len(elements)
-
-            if count >= 16:
-                print(f"요소 {count}개 찾음. 모든 요소의 텍스트값 추출 시작")
-                for i, el in enumerate(elements, start=1):
-                    text_value = el.get_attribute("text")
-                    print(f"요소 {i}의 텍스트 값: {text_value}")
-                time.sleep(0.1)
-                break
-
-            print(f"현재 요소 {count}개 찾음. 16개 이상 찾을 때까지 재시도 중...({retries + 1}/{MAX_RETRIES}")
-            time.sleep(WAIT_TIME)
-            retries += 1
-
+        # 1), 2) 헤더로 새 메일 여부 확인 (재실행 전에 판단)
+        mail_time_text = self.driver.find_element(AppiumBy.ID, OUTLOOK_ID + "short_date").text
+        to_text = self.driver.find_element(AppiumBy.ID, OUTLOOK_ID + "from").text
+        mail_time = _parse_outlook_time(mail_time_text, device_now)
+        if mail_time is None or mail_time < not_before:
+            reason = f"이전 메일(수신 {mail_time_text})"
+        elif expected_to and expected_to.lower() not in to_text.lower():
+            reason = f"다른 수신자 메일({to_text.splitlines()[-1]})"
         else:
-            print("최대 시도 횟수를 초과하였습니다. 요소를 충분히 찾지 못하였습니다.")
-            self.driver.press_keycode(4)
-            time.sleep(2)
-            self.driver.tap([(497, 358)])
-            time.sleep(2)
+            reason = ""
 
+        if reason:
+            print(f"{reason} - 새 메일 대기 후 다시 시도 ({attempt}/{max_attempts})")
+            self.driver.press_keycode(4)  # 메일 닫고 목록으로
+            time.sleep(1)
+            continue
+
+        # 홈 -> Outlook 재실행 (재실행해야 메일 본문의 인증번호가 화면 구조에 나타남)
         self.driver.press_keycode(3)
-        # 홈화면
         time.sleep(1)
+        self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Outlook").click()
 
-        outlook_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Outlook")
-        outlook_button.click()
-        time.sleep(1)
-
-        elements2 = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-        print(f"현재 요소 {len(elements2)}개 찾음.")
-        for i, el in enumerate(elements2, start=1):
-            text_value = el.get_attribute("text")
-            print(f"요소 {i}의 텍스트 값: {text_value}")
-
-        # if len(elements2) >= 15:
-        #     text_value = elements2[14].get_attribute("text")
-        #     print("인증번호:", text_value)
-        #     break
-        # else:
-        #     print("인증번호 없음")
-        #     self.driver.press_keycode(4)
-        #     time.sleep(2)
-
-            match = re.fullmatch(r"\d{6}", text_value.strip())
-            if match:
-                auth_code = match.group()
-                print("인증번호:", auth_code)
+        code = None
+        end = time.time() + 6
+        while time.time() < end:
+            code = _find_auth_code_in_source(self)
+            if code:
                 break
-        if auth_code:
-            print("최종 인증번호: ", auth_code)
-            break
-        else:
-            print("인증번호를 찾지 못했습니다.")
-            self.driver.press_keycode(4)
-            time.sleep(2)
-            return
+            time.sleep(1)
 
-    officeBack = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "닫기")
-    officeBack.click()
-    time.sleep(1)
+        # 3) 직전 번호와 비교
+        if code and code != _last_outlook_code:
+            _last_outlook_code = code
+            print(f"최종 인증번호: {code} (수신 {mail_time_text}, 시도 {attempt}회, {time.time() - started:.1f}초)")
+            officeBack = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "닫기")
+            officeBack.click()
+            time.sleep(1)
+            return code
+
+        reason = f"직전과 같은 인증번호({code})" if code else "본문에서 인증번호를 찾지 못함"
+        print(f"{reason} - 다시 시도 ({attempt}/{max_attempts})")
+        self.driver.press_keycode(4)  # 메일 닫고 목록으로
+        time.sleep(1)
+
+    raise Exception(f"Outlook에서 새 인증번호를 찾지 못했습니다. 마지막 사유: {reason} ({max_attempts}회 시도)")
+
+
+def authCode(self, expected_to=None):
+    auth_code = get_outlook_auth_code(self, expected_to)
 
     self.driver.press_keycode(3)
     # 홈화면
@@ -155,53 +183,90 @@ def authCode(self):
     auth_input_box.click()
     auth_input_box.send_keys(auth_code)
 
-def authCode_mobile(self):
-    self.driver.press_keycode(3)
-    #홈화면
+
+_last_teams_code = None  # 직전에 읽은 휴대폰 인증번호
+
+
+def _parse_teams_cards(page_source):
+    """Teams 채널 화면 XML에서 인증 카드 목록을 위→아래(오래된→최신) 순서로 추출.
+    Workflows 카드는 WebView 안의 TextView 'text'에만 내용이 있고 content-desc는 비어 있으므로
+    content-desc가 아닌 text 속성을 순서대로 읽는다. (예전 webhook 카드도 text에 내용이 있음)
+    반환: [{"time": '오후 8:47', "target": '01039512139', "code": '086007'}, ...]"""
+    cards, cur_time, cur_target = [], None, None
+    for m in re.finditer(r'<[^>]*?\btext="([^"]*)"[^>]*>', page_source):
+        node, text = m.group(0), html.unescape(m.group(1))
+        if "message_status" in node or re.fullmatch(r"(\d{4}년 \d{1,2}월 \d{1,2}일 |\d{1,2}월 \d{1,2}일 )?(오전|오후) \d{1,2}:\d{2}", text):  # 카드 헤더의 수신 시각
+            cur_time, cur_target = text, None
+            continue
+        t = re.search(r"대상\((\d+)\)", text)  # '가입 인증코드 대상(010...)' / '패스워드 찾기 대상(010...)'
+        if t:
+            cur_target = t.group(1)
+        c = re.search(r"\[(\d{6})\]", text)    # '... 인증번호는 [123456] 입니다.'
+        if c:
+            cards.append({"time": cur_time, "target": cur_target, "code": c.group(1)})
+    return cards
+
+
+def get_teams_auth_code(self, phone_number=None, timeout=25):
+    """Teams 'CLUe 인증 코드 수신채널'에서 최신 휴대폰 인증번호를 읽어 반환한다.
+    새 카드 판단:
+      1) 카드 수신 시각이 이 함수 호출 시각(기기 시계, 분 단위) - 1분 ~ 현재 사이일 것
+      2) phone_number가 주어지면 카드의 '대상(번호)'가 일치할 것
+      3) 직전에 읽은 번호와 다를 것
+    Workflows 카드는 WebView라 채널 진입 후 몇 초 뒤에 내용이 나타나므로 timeout까지 반복 확인한다.
+    반환 시 화면: Teams 채널 화면"""
+    global _last_teams_code
+    started = time.time()
+    device_now = datetime.datetime.strptime(self.driver.get_device_time("YYYY-MM-DD HH:mm"), "%Y-%m-%d %H:%M")
+    not_before = device_now - datetime.timedelta(minutes=1)
+    target = re.sub(r"\D", "", phone_number) if phone_number else None
+
+    self.driver.press_keycode(3)  # 홈화면
     time.sleep(1)
+    self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Teams").click()
 
-    teamsApp_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Teams")
-    teamsApp_button.click()
+    # Teams UI 변경: 하단 '채널' 탭 제거 → '채팅' 탭의 '팀 및 채널' 섹션에서 채널 선택
+    self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@resource-id='com.microsoft.teams:id/bb_bottom_bar_title' and @text='채팅']").click()
+    self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@resource-id='com.microsoft.teams:id/teams_channel_text' and @text='CLUe 인증 코드 수신채널']").click()
 
-    for _ in range(2): #새로고침
-        start_x1 = 573
-        start_y1 = 291
-        end_x1 = 573
-        end_y1 = 559
-        self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
+    reason, polls = "채널 카드 없음", 0
+    while time.time() - started < timeout:
         time.sleep(1)
+        polls += 1
+        if polls % 6 == 0:  # 6초마다 맨 아래(최신)로 스크롤
+            self.driver.swipe(540, 1700, 540, 700, 300)
 
-    chSelete = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@resource-id='com.microsoft.teams:id/textView' and @text='채널']")
-    chSelete.click()
+        cards = _parse_teams_cards(self.driver.page_source)
+        if target:
+            cards = [c for c in cards if c["target"] == target]
+        if not cards:
+            reason = f"대상({target}) 카드 없음" if target else "채널 카드 없음"
+            continue
 
-    mobileAuthCh = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@resource-id='com.microsoft.teams:id/teams_channel_text' and @text='CLUe 인증 코드 수신채널']")
-    mobileAuthCh.click()
-    time.sleep(2)
+        latest = cards[-1]
+        # 오늘 카드는 '오후 8:47'처럼 시각만 표시됨. '6월 16일 오후 6:24'처럼 날짜가 붙으면 이전 카드
+        is_today = bool(re.fullmatch(r"(오전|오후) \d{1,2}:\d{2}", latest["time"] or ""))
+        card_time = _parse_outlook_time(latest["time"], device_now) if is_today else None
+        if card_time is None or not (not_before <= card_time <= device_now + datetime.timedelta(minutes=1)):
+            reason = f"이전 카드(수신 {latest['time']}, 대상 {latest['target']}, {latest['code']})"
+            continue
+        if latest["code"] == _last_teams_code:
+            reason = f"직전과 같은 인증번호({latest['code']})"
+            continue
 
-    elements = self.driver.find_elements(AppiumBy.XPATH, "//android.widget.TextView[@content-desc]")
+        _last_teams_code = latest["code"]
+        print(f"Teams 인증번호: {latest['code']} (대상 {latest['target']}, 수신 {latest['time']}, {time.time() - started:.1f}초)")
+        return latest["code"]
 
-    for i, el in enumerate(elements, start=1):
-        text_value1 = el.get_attribute("text")
-        print(f"요소 {i}의 텍스트 값: {text_value1}")
+    raise Exception(f"Teams 인증 코드 수신채널에서 새 인증번호를 찾지 못했습니다. 마지막 사유: {reason} ({timeout}초)")
 
-    if elements:
-        last_value = elements[-1].get_attribute("content-desc")
-        print(f"마지막 요소의 content-desc 값: {last_value}")
 
-        num_value = last_value[25:31]
-        print(f"추출한 값: {num_value}")
-
-    else:
-        last_value = None
-        print("요소가 없습니다..")
+def authCode_mobile(self, phone_number=None):
+    num_value = get_teams_auth_code(self, phone_number)
 
     teamsBack = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "뒤로")
     teamsBack.click()
     time.sleep(0.3)
-
-    chSelete2 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.TextView[@resource-id='com.microsoft.teams:id/textView' and @text='채널']")
-    chSelete2.click()
-    time.sleep(0.1)
 
     self.driver.press_keycode(3)
     #홈화면
@@ -214,6 +279,7 @@ def authCode_mobile(self):
     auth_input_box = self.driver.find_element(AppiumBy.CLASS_NAME, signUpInput)
     auth_input_box.click()
     auth_input_box.send_keys(num_value)
+
 
 def placeInviteEmail(self, placeId, emailAddress, role):
     url1 = "https://api.moon.supremainc.com/stage/v1/accounts/login/email"
@@ -232,92 +298,7 @@ def placeInviteEmail(self, placeId, emailAddress, role):
     except Exception:
         print("Response Text:", response1.text)
 
-    self.driver.press_keycode(3)
-    # 홈화면
-    time.sleep(1)
-
-    while True:
-        if "outlook" not in self.driver.current_package:
-            print("앱이 종료되어 다시 실행")
-            self.driver.activate_app("com.microsoft.office.outlook")
-            time.sleep(2)
-
-        accountBtn = self.driver.find_element(AppiumBy.ID, "com.microsoft.office.outlook:id/account_button")
-        accountBtn.click()
-
-        clueBtn = self.driver.find_element(AppiumBy.XPATH, "//androidx.compose.ui.platform.ComposeView[@resource-id='com.microsoft.office.outlook:id/drawer_folder_composable']/android.view.View/android.view.View/android.view.View[2]/android.view.View[3]/android.view.View[1]")
-        clueBtn.click()
-        time.sleep(7)
-
-        for _ in range(3):  # 새로고침
-            start_x1 = 573
-            start_y1 = 291
-            end_x1 = 573
-            end_y1 = 1320
-            self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
-            time.sleep(3)
-
-        self.driver.tap([(497, 358)])
-        time.sleep(2)
-
-        MAX_RETRIES = 3
-        WAIT_TIME = 3
-        retries = 0
-
-        while retries < MAX_RETRIES:
-            elements = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-            count = len(elements)
-
-            if count >= 16:
-                print(f"요소 {count}개 찾음. 모든 요소의 텍스트값 추출 시작")
-                time.sleep(0.1)
-                break
-
-            print(f"현재 요소 {count}개 찾음. 16개 이상 찾을 때까지 재시도 중...({retries + 1}/{MAX_RETRIES}")
-            time.sleep(WAIT_TIME)
-            retries += 1
-        else:
-            print("최대 시도 횟수를 초과하였습니다. 요소를 충분히 찾지 못하였습니다.")
-
-        self.driver.press_keycode(3)
-        # 홈화면
-        time.sleep(1)
-
-        outlook_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Outlook")
-        outlook_button.click()
-        time.sleep(1)
-
-        elements2 = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-        print(f"현재 요소 {len(elements2)}개 찾음.")
-        for i, el in enumerate(elements2, start=1):
-            text_value = el.get_attribute("text")
-            print(f"요소 {i}의 텍스트 값: {text_value}")
-
-        # if len(elements2) >= 15:
-        #     text_value = elements2[14].get_attribute("text")
-        #     print("인증번호:", text_value)
-        #     break
-        # else:
-        #     print("인증번호 없음")
-        #     self.driver.press_keycode(4)
-        #     time.sleep(2)
-            match = re.fullmatch(r"\d{6}", text_value.strip())
-            if match:
-                auth_code2 = match.group()
-                print("인증번호:", auth_code2)
-                break
-        if auth_code2:
-            print("최종 인증번호: ", auth_code2)
-            break
-        else:
-            print("인증번호를 찾지 못했습니다.")
-            self.driver.press_keycode(4)
-            time.sleep(2)
-            return
-
-    officeBack = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "닫기")
-    officeBack.click()
-    time.sleep(1)
+    auth_code2 = get_outlook_auth_code(self, "kjjung+pga@suprema.co.kr")
 
     url2 = "https://api.moon.supremainc.com/stage/v1/accounts/login/two-factor"
     headers2 = {
@@ -392,92 +373,7 @@ def placeInvitePhone(self, placeId,countryCode, phoneNumber, role):
     else:
         print("로그인 실패")
 
-    self.driver.press_keycode(3)
-    # 홈화면
-    time.sleep(1)
-
-    while True:
-        if "outlook" not in self.driver.current_package:
-            print("앱이 종료되어 다시 실행")
-            self.driver.activate_app("com.microsoft.office.outlook")
-            time.sleep(2)
-
-        accountBtn = self.driver.find_element(AppiumBy.ID, "com.microsoft.office.outlook:id/account_button")
-        accountBtn.click()
-
-        clueBtn = self.driver.find_element(AppiumBy.XPATH, "//androidx.compose.ui.platform.ComposeView[@resource-id='com.microsoft.office.outlook:id/drawer_folder_composable']/android.view.View/android.view.View/android.view.View[2]/android.view.View[3]/android.view.View[1]")
-        clueBtn.click()
-        time.sleep(7)
-
-        for _ in range(3):  # 새로고침
-            start_x1 = 573
-            start_y1 = 291
-            end_x1 = 573
-            end_y1 = 1320
-            self.driver.swipe(start_x1, start_y1, end_x1, end_y1)
-            time.sleep(3)
-
-        self.driver.tap([(497, 358)])
-        time.sleep(2)
-
-        MAX_RETRIES = 3
-        WAIT_TIME = 3
-        retries = 0
-
-        while retries < MAX_RETRIES:
-            elements = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-            count = len(elements)
-
-            if count >= 16:
-             print(f"요소 {count}개 찾음. 모든 요소의 텍스트값 추출 시작")
-             time.sleep(0.1)
-             break
-
-            print(f"현재 요소 {count}개 찾음. 16개 이상 찾을 때까지 재시도 중...({retries + 1}/{MAX_RETRIES}")
-            time.sleep(WAIT_TIME)
-            retries += 1
-        else:
-            print("최대 시도 횟수를 초과하였습니다. 요소를 충분히 찾지 못하였습니다.")
-
-        self.driver.press_keycode(3)
-        # 홈화면
-        time.sleep(1)
-
-        outlook_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "Outlook")
-        outlook_button.click()
-        time.sleep(1)
-
-        elements2 = self.driver.find_elements(AppiumBy.XPATH, "//android.view.View[@text][1]")
-        print(f"현재 요소 {len(elements2)}개 찾음.")
-        for i, el in enumerate(elements2, start=1):
-            text_value = el.get_attribute("text")
-            print(f"요소 {i}의 텍스트 값: {text_value}")
-
-        # if len(elements2) >= 15:
-        #     text_value = elements2[14].get_attribute("text")
-        #     print("인증번호:", text_value)
-        #     break
-        # else:
-        #     print("인증번호 없음")
-        #     self.driver.press_keycode(4)
-        #     time.sleep(2)
-            match = re.fullmatch(r"\d{6}", text_value.strip())
-            if match:
-                auth_code = match.group()
-                print("인증번호:", auth_code)
-                break
-        if auth_code:
-            print("최종 인증번호: ", auth_code)
-            break
-        else:
-            print("인증번호를 찾지 못했습니다.")
-            self.driver.press_keycode(4)
-            time.sleep(2)
-            return
-
-    officeBack = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "닫기")
-    officeBack.click()
-    time.sleep(1)
+    auth_code = get_outlook_auth_code(self, "kjjung+pga@suprema.co.kr")
 
     while True:
         url2 = "https://api.moon.supremainc.com/stage/v1/accounts/login/two-factor"
@@ -564,7 +460,7 @@ def signUpEmail(self, emailAddress): #랜덤 이메일 회원가입
     authBtn.click()
     time.sleep(2)
 
-    authCode(self)
+    authCode(self, emailAddress)
 
     authComBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, authComplete)
     authComBtn.click()
@@ -614,7 +510,7 @@ def signUpMobile(self, mobileNumber): #랜덤 폰번호 회원가입
     authRequest.click()
     time.sleep(0.5)
 
-    authCode_mobile(self)
+    authCode_mobile(self, mobileNumber)
 
     #self.driver.hide_keyboard()
 
@@ -671,7 +567,7 @@ def mobilePlaceSetting(self, mobileNumber):
     placeInput.click()
     placeInput.send_keys("비디오 공간")
 
-    placeSeachBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='비디오 공간']/android.widget.ImageView")
+    placeSeachBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='비디오 공간']/following-sibling::*[1][self::android.widget.ImageView]")
     placeSeachBtn.click()
 
     placeSel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.widget.ImageView")
@@ -710,7 +606,7 @@ def emailPlaceSetting(self, emailAdress):
     login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, emailLogin)
     login_button.click()
 
-    email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.widget.ImageView[@content-desc=\"이메일 주소\n비밀번호\"]/android.widget.EditText[1]")
+    email_input_box = self.driver.find_element(AppiumBy.XPATH, "//android.view.View[@content-desc='이메일 주소']/following-sibling::*[1][self::android.widget.EditText]")
     email_input_box.click()
     email_input_box.send_keys("kjjung+p1@suprema.co.kr")
 
@@ -721,7 +617,7 @@ def emailPlaceSetting(self, emailAdress):
     login_button = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, login)
     login_button.click()
 
-    authCode(self)
+    authCode(self, emailAdress)
 
     self.driver.hide_keyboard()
 
@@ -736,7 +632,7 @@ def emailPlaceSetting(self, emailAdress):
     placeInput.click()
     placeInput.send_keys("비디오 공간")
 
-    placeSeachBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='비디오 공간']/android.widget.ImageView")
+    placeSeachBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='비디오 공간']/following-sibling::*[1][self::android.widget.ImageView]")
     placeSeachBtn.click()
 
     placeSel = self.driver.find_element(AppiumBy.XPATH, "//android.widget.FrameLayout[@resource-id='android:id/content']/android.widget.FrameLayout/android.view.View/android.view.View/android.view.View/android.view.View/android.view.View[2]/android.widget.ImageView")
@@ -775,7 +671,7 @@ def passwordValidtion(self):
     passInput1.click()
     passInput1.send_keys("Suprem!")
 
-    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/android.widget.ImageView")
+    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/following-sibling::*[1][self::android.widget.ImageView]")
     lookBtn.click()
     pass1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Suprem!']")
     text1 = pass1.get_attribute('text')
@@ -997,7 +893,7 @@ def RePasswordValidtion(self):
     passInput1.click()
     passInput1.send_keys("Suprem!")
 
-    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/android.widget.ImageView")
+    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/following-sibling::*[1][self::android.widget.ImageView]")
     lookBtn.click()
     pass1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Suprem!']")
     text1 = pass1.get_attribute('text')
@@ -1228,7 +1124,7 @@ def resetPasswordValidtion(self):
     passInput1.click()
     passInput1.send_keys("Suprem!")
 
-    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/android.widget.ImageView")
+    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/following-sibling::*[1][self::android.widget.ImageView]")
     lookBtn.click()
     pass1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Suprem!']")
     text1 = pass1.get_attribute('text')
@@ -1421,7 +1317,7 @@ def resetRePasswordValidtion(self):
     passInput1.click()
     passInput1.send_keys("Suprem!")
 
-    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/android.widget.ImageView")
+    lookBtn = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='•••••••']/following-sibling::*[1][self::android.widget.ImageView]")
     lookBtn.click()
     pass1 = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText[@text='Suprem!']")
     text1 = pass1.get_attribute('text')
@@ -1656,7 +1552,7 @@ def email_login(self, emailInput, passwordInput):
     login_button.click()
     time.sleep(2)
 
-    authCode(self)
+    authCode(self, emailInput)
 
     self.driver.hide_keyboard()
 
@@ -1765,7 +1661,7 @@ def signUp_mobile(self, phoneNum, name, password, rePassword):
     AuthReqestBtn.click()
     time.sleep(1)
 
-    authCode_mobile(self)
+    authCode_mobile(self, phoneNum)
     time.sleep(0.5)
 
     atBtn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "인증완료")
@@ -1837,8 +1733,21 @@ def user_invite_phone(self, name, phone_num):
     invite_Btn.click()
     time.sleep(1)
 
-    confirm_btn = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인")
-    confirm_btn.click()
+    # 초대 결과(출입 권한) 화면의 '확인' → 사용자 목록으로 돌아올 때까지 재시도 (서버 응답 지연 대비)
+    self.driver.implicitly_wait(2)
+    try:
+        for _ in range(5):
+            if self.driver.find_elements(AppiumBy.ACCESSIBILITY_ID, "사용자 목록"):
+                break
+            for btn in self.driver.find_elements(AppiumBy.ACCESSIBILITY_ID, "확인"):
+                if btn.is_displayed():
+                    btn.click()
+                    break
+            time.sleep(1)
+        else:
+            raise NoSuchElementException("초대 후 사용자 목록 화면으로 돌아오지 못했습니다.")
+    finally:
+        self.driver.implicitly_wait(10)
     time.sleep(1)
 
 def user_delete(self):
@@ -1846,7 +1755,8 @@ def user_delete(self):
     user_modity = self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "수정")
     user_modity.click()
 
-    user_delete = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='삭제'])[2]")
+    # 등록순 목록의 마지막 = 방금 초대한 테스트 사용자 (기존 [2]는 '정국진'이 첫 번째에 있다는 전제)
+    user_delete = self.driver.find_element(AppiumBy.XPATH, "(//android.view.View[@content-desc='삭제'])[last()]")
     user_delete.click()
 
     assert self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "사용자 제외")
@@ -1859,4 +1769,211 @@ def user_delete(self):
     confirm_Btn.click()
     time.sleep(1)
 
+
+# ---------------------------------------------------------------------------
+# 사용자 상세 - 출입문 목록
+# content-desc 예: "출입문\nBS3_538200888\n...\n모든 출입문은 해당 공간에 ... 반영 합니다."
+# 하위 ImageView 는 행마다 [출입문 아이콘, X 버튼] 순서 → ImageView[2] = 첫 번째 행의 X 버튼
+# 출입문 이름/순서는 서버 설정에 따라 바뀌므로 하드코딩하지 않는다.
+# ---------------------------------------------------------------------------
+
+USER_DOOR_SECTION = "//android.view.View[starts-with(@content-desc, '출입문\n')]"
+ALL_DOOR_NOTICE = "모든 출입문은"
+
+
+def user_door_list(self):
+    """사용자 상세 화면의 출입문 이름 목록을 반환한다. (출입문이 없으면 빈 리스트)"""
+    sections = self.driver.find_elements(AppiumBy.XPATH, USER_DOOR_SECTION)
+    if not sections:
+        return []
+    lines = sections[0].get_attribute("content-desc").split("\n")[1:]
+    # 출입문이 모두 삭제되면 우측 '모든 출입문' 버튼 문구가 content-desc 에 남으므로 제외
+    return [line for line in lines
+            if line and line != "모든 출입문" and not line.startswith(ALL_DOOR_NOTICE)]
+
+
+def user_door_delete_first(self):
+    """첫 번째 출입문의 X 버튼을 눌러 삭제하고, 삭제한 출입문 이름을 반환한다."""
+    doors = user_door_list(self)
+    if not doors:
+        raise NoSuchElementException("삭제할 출입문이 없습니다.")
+    self.driver.find_element(AppiumBy.XPATH, f"{USER_DOOR_SECTION}/android.widget.ImageView[2]").click()
+    time.sleep(0.5)
+    return doors[0]
+
+
+# ---------------------------------------------------------------------------
+# 공간 이동
+# 로그인 직후 공간은 고정이 아님 (ID가 높은 공간 또는 마지막 사용 공간) → 필요한 공간으로 직접 이동
+# ---------------------------------------------------------------------------
+
+PLACE_HEADER_MAX_Y = 500  # 메인 화면 상단 공간 이름 영역 (Visitor Place1 [56,266], 비디오 공간 [56,201])
+
+
+def _current_place_header(self):
+    """메인 화면 상단의 공간 이름 요소를 반환 (x=56 에서 시작하고 y < 500 인 첫 요소)."""
+    for el in self.driver.find_elements(AppiumBy.XPATH, "//*[@content-desc!='' and starts-with(@bounds, '[56,')]"):
+        if el.rect["y"] < PLACE_HEADER_MAX_Y and el.is_displayed():
+            return el
+    raise NoSuchElementException("메인 화면에서 공간 이름 영역을 찾을 수 없습니다.")
+
+
+def move_place(self, place_name, restore_wait=10):
+    """place_name 공간으로 이동한다. 이미 해당 공간이면 아무것도 하지 않는다.
+
+    공간 이름 선택 → 공간 선택 화면 → 목록에 있으면 바로 선택 / 없으면 검색 후 선택
+    """
+    self.driver.implicitly_wait(2)
+    try:
+        # 로그인 직후 메인 화면 로딩이 늦을 수 있어 공간 이름 영역을 최대 약 10초 대기
+        header = None
+        for _ in range(5):
+            try:
+                header = _current_place_header(self)
+                break
+            except NoSuchElementException:
+                time.sleep(1)
+        if header is None:
+            capture_screenshot(self.driver, "move_place_no_header")
+            header = _current_place_header(self)
+        current = header.get_attribute("content-desc")
+        if current == place_name:
+            print(f"현재 공간: {current} (이동 불필요)")
+            return
+        print(f"현재 공간: {current} → {place_name} 이동")
+
+        header.click()
+        self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "공간 선택")
+
+        item_xpath = f"//*[starts-with(@content-desc, '{place_name}\nID')]"
+        items = [el for el in self.driver.find_elements(AppiumBy.XPATH, item_xpath) if el.is_displayed()]
+        if not items:
+            search = self.driver.find_element(AppiumBy.XPATH, "//android.widget.EditText")
+            search.click()
+            search.send_keys(place_name)
+            time.sleep(1)
+            items = [el for el in self.driver.find_elements(AppiumBy.XPATH, item_xpath) if el.is_displayed()]
+        if not items:
+            raise NoSuchElementException(f"공간 목록/검색 결과에 '{place_name}' 공간이 없습니다. (계정 소속 공간 확인 필요)")
+
+        # 이름 라벨은 눌러도 이동하지 않음 → 라벨 바로 위의 공간 이미지 선택
+        r = items[0].rect
+        self.driver.tap([(r["x"] + r["width"] // 2, r["y"] - 100)])
+
+        moved = None
+        for _ in range(10):  # 공간 메인 화면 로딩 대기 (최대 약 10초)
+            time.sleep(1)
+            try:
+                moved = _current_place_header(self).get_attribute("content-desc")
+            except NoSuchElementException:
+                continue
+            if moved == place_name:
+                return
+        raise AssertionError(f"공간 이동 실패: 기대={place_name}, 현재={moved}")
+    finally:
+        self.driver.implicitly_wait(restore_wait)
+
+
+
+# ---------------------------------------------------------------------------
+# 스와이프하며 요소 찾기 / 방해 금지 시간 휠 피커
+# ---------------------------------------------------------------------------
+
+def swipe_until_found(self, by, value, swipe, duration=200, max_swipes=10, click=False, required=True, restore_wait=10):
+    """요소가 보일 때까지 swipe=(x1, y1, x2, y2) 로 스와이프한다.
+
+    탐색 중에는 implicit wait 를 0 으로 둔다. (기존 루프는 못 찾을 때마다 implicit wait 10초를
+    기다려 스와이프 1회당 10초 이상 걸렸음) 종료 시 restore_wait(setUp 값과 동일하게 10초)로 복구한다.
+    ※ Appium 1.22 에서는 driver.timeouts 로 현재 값을 읽을 수 없어 복구 값을 인자로 받음
+    """
+    self.driver.implicitly_wait(0)
+    try:
+        for _ in range(max_swipes + 1):
+            for el in self.driver.find_elements(by, value):
+                if el.is_displayed():
+                    if click:
+                        el.click()
+                    return el
+            self.driver.swipe(*swipe, duration)
+            time.sleep(0.3)
+    finally:
+        self.driver.implicitly_wait(restore_wait)
+    if required:
+        raise NoSuchElementException(f"스와이프 {max_swipes}회 후에도 찾을 수 없습니다: {value}")
+    return None
+
+
+# 방해 금지 시간 피커(2.2.0): SeekBar 4개 = [시작 시, 시작 분, 종료 시, 종료 분]
+# content-desc 에 현재 선택값이 들어 있음 ("11 o'clock", "1 minute", "50 minutes")
+# 휠 1칸 = 91px, 위로 드래그하면 값 증가
+DND_WHEEL_ROW_PX = 91
+DND_WHEEL_MAX_ROWS = 7  # 드래그 1회에 굴릴 최대 칸 수 (휠 영역 높이 안에서 움직이도록)
+
+
+def _wheel_value(self, index):
+    desc = self.driver.find_element(AppiumBy.XPATH, f"(//android.widget.SeekBar)[{index}]").get_attribute("content-desc")
+    found = re.search(r"\d+", desc or "")
+    if not found:
+        raise Exception(f"휠 값을 읽을 수 없습니다: {desc!r}")
+    return int(found.group())
+
+
+def _wheel_drag(self, x, y_from, y_to):
+    """관성(fling) 없이 정확한 거리만큼 굴리기: 천천히 이동 후 잠시 멈췄다가 손을 뗀다."""
+    actions = ActionChains(self.driver)
+    actions.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput("touch", "touch"))
+    pointer = actions.w3c_actions.pointer_action
+    pointer.move_to_location(x, y_from)
+    pointer.pointer_down()
+    actions.w3c_actions.pointer_action._duration = 300
+    pointer.move_to_location(x, y_to)
+    pointer.pause(0.3)
+    pointer.release()
+    actions.perform()
+    time.sleep(0.3)
+
+
+def set_wheel(self, index, target, modulo, max_drags=10):
+    """index 번째(1부터) SeekBar 휠을 target 값으로 맞춘다. 순환 휠이므로 가까운 방향으로 굴린다."""
+    bar = self.driver.find_element(AppiumBy.XPATH, f"(//android.widget.SeekBar)[{index}]")
+    rect = bar.rect
+    x = rect["x"] + rect["width"] // 2
+    top = rect["y"] + 60
+    bottom = rect["y"] + rect["height"] - 60
+
+    for _ in range(max_drags):
+        current = _wheel_value(self, index)
+        diff = (target - current) % modulo
+        if diff > modulo // 2:
+            diff -= modulo
+        if diff == 0:
+            return
+        rows = max(-DND_WHEEL_MAX_ROWS, min(DND_WHEEL_MAX_ROWS, diff))
+        if rows > 0:   # 값 증가 → 위로 드래그
+            _wheel_drag(self, x, bottom, bottom - rows * DND_WHEEL_ROW_PX)
+        else:          # 값 감소 → 아래로 드래그
+            _wheel_drag(self, x, top, top - rows * DND_WHEEL_ROW_PX)
+
+    raise Exception(f"휠 {index} 값을 {target} 로 맞추지 못했습니다. (현재 {_wheel_value(self, index)})")
+
+
+def open_dnd_picker(self):
+    """방해 금지 시간 화면에서 시간 피커를 연다. (행 요소 click() 으로는 열리지 않아 행 오른쪽을 탭)"""
+    row = self.driver.find_element(AppiumBy.XPATH, "//*[starts-with(@content-desc,'시작 시간')]")
+    r = row.rect
+    self.driver.tap([(r["x"] + int(r["width"] * 0.8), r["y"] + r["height"] // 2)])
+    self.driver.find_element(AppiumBy.XPATH, "(//android.widget.SeekBar)[4]")
+
+
+def set_dnd_time(self, start_hour, start_min, end_hour, end_min, confirm=True):
+    """방해 금지 시간 피커를 열어 시작/종료 시간(24시간제)을 맞춘다. confirm=True 면 '확인'까지 누른다."""
+    open_dnd_picker(self)
+    set_wheel(self, 1, start_hour, 24)
+    set_wheel(self, 2, start_min, 60)
+    set_wheel(self, 3, end_hour, 24)
+    set_wheel(self, 4, end_min, 60)
+    print(f"방해 금지 시간 설정: {start_hour:02d}:{start_min:02d} ~ {end_hour:02d}:{end_min:02d}")
+    if confirm:
+        self.driver.find_element(AppiumBy.ACCESSIBILITY_ID, "확인").click()
+        time.sleep(0.5)
 
